@@ -10,11 +10,22 @@
 # widget — trước khi `scripts/publish-atlas.sh` chịu ghi `SOURCE.json`. Số phép kiểm và số đột biến
 # self-test CỐ TÌNH không ghi ở đây: chúng là con số đo được, mà con số chép tay cạnh một con số đo
 # được thì trôi (repo gốc đã trả giá cho việc đó ba lần). Con số THẬT nằm trong `SOURCE.json.gate`.
-# Nên phép kiểm ở đây chỉ là MỘT dòng so md5, và đó là chủ đích:
-#   md5(index.html) == SOURCE.json.page_md5   ⇒   bytes này LÀ bytes đã qua cổng.
+# Nên phép kiểm ở đây chỉ là so md5, và đó là chủ đích:
+#   md5(index.html)      == SOURCE.json.page_md5      ⇒ bytes TRANG này LÀ bytes đã qua GATE-ATLAS.
+#   md5(c4/<file>)       == cặp trong c4_manifest     ⇒ bytes C4  này LÀ bytes đã qua GATE-VNDOC.
 # Suy ra bắc cầu. Cài lại cổng ở đây thì sẽ có HAI định nghĩa của cùng một phép kiểm, và hai định
 # nghĩa thì sớm muộn cũng cãi nhau (repo gốc đã trả giá cho bài học đó: cùng một repo ra 46/47/71
 # "cổng" tuỳ phạm vi đếm). Một định nghĩa, đặt ở nơi nó thuộc về, và một con tem để suy ra.
+#
+# ── VÌ SAO CÓ THƯ MỤC `c4/` ─────────────────────────────────────────────────
+# Repo này ban đầu chứa đúng MỘT trang. Nay nó chở thêm bộ mô hình C4 (`c4/*.md`, 7 file, có Mermaid)
+# — vẫn là TÀI LIỆU, không phải mã nguồn. Lý do để ở dạng `.md` chứ không nhúng vào trang HTML: GitHub
+# render Mermaid ngay ở blob view, còn trang HTML thì tự chứa nên cố ý không vẽ lại sơ đồ (vẽ lại bằng
+# tay là tạo ra nguồn sự thật thứ hai). Đọc bằng đường nào cũng được:
+#   blob view (có render sơ đồ): https://github.com/khanhlegood3/9link-atlas/tree/main/c4
+#   Pages (markdown thô)       : https://khanhlegood3.github.io/9link-atlas/c4/README.md
+# ⚠️ Mọi con số trong `c4/` thuộc cây `b559c68` (2026-09-08) và TỰ KHAI điều đó ở đầu mỗi file.
+#   Chúng không phải hiện trạng của repo gốc — đọc như một ảnh chụp có ngày.
 #
 # ── plumbing giữ nguyên từ `deploy.yml` mẫu ─────────────────────────────────
 # `permissions` · `concurrency: pages` với `cancel-in-progress: false` · `upload-pages-artifact@v3`
@@ -75,7 +86,52 @@ jobs:
             echo "::error::index.html KHÁC bản đã qua cổng. SOURCE.json chỉ được ghi sau khi cổng thoát 0, nên lệch ở đây nghĩa là có ai sửa trang bằng tay sau khi xuất bản. Đừng sửa md5 trong SOURCE.json cho khớp — hãy xuất bản lại từ 9Link."
             exit 1
           fi
-          echo "✅ khớp: bytes đang ở đây là bytes đã qua cổng ở 9Link"
+          echo "✅ khớp TRANG: bytes đang ở đây là bytes đã qua GATE-ATLAS ở 9Link"
+
+          # ── bộ C4: cùng một phép, trên từng file, đọc từ cùng một con tem ──
+          # `c4_manifest` là MỘT dòng gồm các cặp `tên=md5` cách nhau bởi dấu cách. Đọc bằng grep +
+          # vòng lặp, không cần jq — vì SOURCE.json được ghi với định dạng cố định CHÍNH XÁC để phép
+          # đọc này đáng tin. Nếu một ngày cần jq ở đây thì định dạng bên kia đã đổi mà không đổi ở đây.
+          # ⚠️ BẪY ĐÃ SẬP MỘT LẦN, ghi lại để đừng sập lần hai: lấy giá trị bằng
+          #   `grep -o '"c4_files"…[0-9]\+' | grep -o '[0-9]\+'` sẽ bóc ra CẢ CON SỐ TRONG TÊN KHOÁ —
+          #   `c4_files` có một chữ số 4, nên "7" được đọc thành "4\n7" và phép đếm ngược báo lệch.
+          #   Cùng họ với lỗi "bộ đo grep mã sản phẩm rồi tự phát hiện chính nó". Nguyên tắc: bóc giá trị
+          #   bằng sed theo ĐÚNG tên khoá, đừng bao giờ grep chữ số trên một chuỗi còn chứa tên khoá.
+          #   (Lỗi này không lộ ở `bash -n`, cũng không lộ ở repo nguồn: nó chỉ lộ khi chạy bước này trên
+          #   một cây SOURCE.json thật — nên `scripts/publish-atlas.sh` nay trích đúng bước này ra và chạy
+          #   nó trên cây vừa dựng, TRƯỚC khi chịu push.)
+          want_files=$(grep -o '"c4_files"[[:space:]]*:[[:space:]]*[0-9]\+' SOURCE.json | sed -E 's/^"c4_files"[[:space:]]*:[[:space:]]*//' || true)
+          manifest=$(grep -o '"c4_manifest"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"c4_manifest"[[:space:]]*:[[:space:]]*"//; s/"$//' || true)
+          if [ -z "${want_files:-}" ] || [ -z "${manifest:-}" ]; then
+            echo "::error::SOURCE.json thiếu c4_files hoặc c4_manifest. Repo này do scripts/publish-atlas.sh sinh ra; một con tem thiếu khoá nghĩa là nó được viết bởi một bản script cũ hơn nội dung đang nằm ở đây."
+            exit 1
+          fi
+          if [ ! -d c4 ]; then
+            echo "::error::thiếu thư mục c4/ trong khi SOURCE.json khai ${want_files} file."
+            exit 1
+          fi
+          seen=0
+          for pair in $manifest; do
+            n="${pair%%=*}"; m="${pair##*=}"
+            if [ ! -f "c4/$n" ]; then
+              echo "::error::tem khai c4/$n nhưng file không có ở đây."
+              exit 1
+            fi
+            g=$(md5sum "c4/$n" | cut -d' ' -f1)
+            if [ "$m" != "$g" ]; then
+              echo "::error::c4/$n KHÁC bản đã qua GATE-VNDOC: tem ghi ${m}, file là ${g}."
+              exit 1
+            fi
+            seen=$((seen+1))
+          done
+          # Đếm cả chiều ngược lại: một file C4 MỒ CÔI (không được tem khai) vẫn được Pages phục vụ,
+          # tức repo công khai chứa nội dung mà chính nó không truy vết được.
+          on_disk=$(ls c4/*.md 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$seen" != "$want_files" ] || [ "$on_disk" != "$want_files" ]; then
+            echo "::error::số file C4 lệch nhau: tem khai ${want_files}, đối chiếu được ${seen}, trên đĩa ${on_disk}."
+            exit 1
+          fi
+          echo "✅ khớp C4: ${seen}/${want_files} file đúng md5 đã qua GATE-VNDOC ở 9Link, không file mồ côi"
           grep -o '"source_sha"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed 's/^/  nguồn: /'
           grep -o '"published_at"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed 's/^/  /'
 
@@ -88,7 +144,11 @@ jobs:
           #   https://khanhlegood3.github.io/9link-atlas/SOURCE.json
           cp index.html SOURCE.json _site/
           cmp index.html _site/index.html
-          ls -la _site
+          # Bộ C4 đi theo artifact, để nó có URL ổn định trên Pages chứ không chỉ nằm trong repo.
+          # Ở đây chỉ cần NỘI DUNG nên `cp -r` là đủ; từng file được `cmp` lại ngay sau đó.
+          cp -r c4 _site/
+          for f in c4/*.md; do cmp "$f" "_site/$f"; done
+          ls -la _site _site/c4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -122,40 +182,71 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Tải trang đã đăng và so lại md5
+      - name: Tải bản đã đăng và so lại md5 (trang + một file C4)
         env:
           PAGE_URL: ${{ needs.deploy.outputs.page_url }}
         run: |
           set -euo pipefail
           if [ -z "${PAGE_URL}" ]; then echo "::error::không nhận được page_url từ job deploy"; exit 1; fi
-          echo "Trang đã đăng: ${PAGE_URL}"
+          base="${PAGE_URL%/}/"
+          echo "Gốc đã đăng: ${base}"
           # Số lần thử định nghĩa MỘT lần; thông báo suy ra từ biến, không chép lại con số.
           TRIES=9; WAIT=10
           want=$(grep -o '"page_md5"[[:space:]]*:[[:space:]]*"[0-9a-f]\{32\}"' SOURCE.json | grep -o '[0-9a-f]\{32\}')
-          out=/tmp/trang-da-dang.html
-          code=000; ok=no
-          for i in $(seq 1 "$TRIES"); do
-            code=$(curl -s -o "$out" -w '%{http_code}' -L "${PAGE_URL}" || true)
-            code=${code:-000}
-            if [ "$code" = "200" ]; then
-              got=$(md5sum "$out" | cut -d' ' -f1)
-              if [ "$got" = "$want" ]; then ok=yes; break; fi
-              echo "  lần ${i}: HTTP 200 nhưng md5 ${got} ≠ ${want} (CDN còn bản cũ?) — chờ rồi thử lại"
-            else
-              echo "  lần ${i}: HTTP ${code}"
-            fi
-            sleep "$WAIT"
-          done
-          if [ "$ok" = "yes" ]; then
-            echo "✅ HTTP 200 · md5 khớp SOURCE.json · $(wc -c < "$out") bytes"
-            echo "   ${PAGE_URL} đang phục vụ đúng bản đã qua cổng."
-            exit 0
-          fi
-          if [ "$code" = "200" ]; then
-            echo "::error::Trang tại ${PAGE_URL} LỆCH bản trong repo sau ${TRIES} lần thử / ~$((TRIES*WAIT)) s."
-            echo "  md5 tải về   : $(md5sum "$out" | cut -d' ' -f1)"
-            echo "  SOURCE.json  : ${want}"
+          # Lấy md5 kỳ vọng của MỘT file C4 từ manifest: đủ để chứng minh thư mục c4/ có lên Pages thật,
+          # mà không nhân bản vòng lặp cho cả bảy file (bảy lần × chín lần thử × mười giây là ~10 phút
+          # chờ CDN cho một phép kiểm không thêm thông tin: artifact được upload NGUYÊN KHỐI, nên hoặc
+          # cả khối lên, hoặc không). Chọn README.md vì tên nó không đổi theo nội dung bộ C4.
+          # Bóc giá trị bằng sed theo dấu `=`, KHÔNG grep hex trên cả cặp: cùng một cái bẫy với
+          # `c4_files` ở trên — tên file cũng là chữ, và một phép grep "tìm 32 ký tự hex" trên chuỗi
+          # còn chứa tên file là một phép đọc đang cầu may.
+          c4_want=$(grep -o '"c4_manifest"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json \
+                      | sed -E 's/^"c4_manifest"[[:space:]]*:[[:space:]]*"//; s/"$//' \
+                      | grep -oE '(^|[[:space:]])README\.md=[0-9a-f]{32}' | sed -E 's/^.*=//' || true)
+          if [ -z "${c4_want:-}" ]; then
+            echo "::error::không rút được md5 của c4/README.md từ SOURCE.json.c4_manifest — phép đọc và định dạng đã lệch nhau."
             exit 1
           fi
-          echo "::warning::KHÔNG XÁC MINH ĐƯỢC từ runner (HTTP ${code} sau ~$((TRIES*WAIT)) s). Deploy đã thành công theo API; thường gặp khi Pages vừa bật nên CDN chưa có. Mở ${PAGE_URL} trong trình duyệt để kiểm bằng mắt."
+          # Một hàm, hai đích: định nghĩa "đã xác minh" chỉ có MỘT, áp cho cả trang lẫn file C4.
+          # Viết hai vòng lặp kế tiếp nhau là hai bản sao của cùng một định nghĩa — và bản sao thì trôi.
+          code=000
+          check_url() {  # $1 = URL · $2 = md5 kỳ vọng · $3 = tên để gọi trong log
+            local url="$1" exp="$2" label="$3" out i got
+            out="/tmp/da-dang-$(echo "$3" | tr -c 'A-Za-z0-9' '-').bin"
+            code=000
+            for i in $(seq 1 "$TRIES"); do
+              code=$(curl -s -o "$out" -w '%{http_code}' -L "$url" || true)
+              code=${code:-000}
+              if [ "$code" = "200" ]; then
+                got=$(md5sum "$out" | cut -d' ' -f1)
+                if [ "$got" = "$exp" ]; then
+                  echo "✅ ${label}: HTTP 200 · md5 khớp SOURCE.json · $(wc -c < "$out") bytes"
+                  return 0
+                fi
+                echo "  ${label} lần ${i}: HTTP 200 nhưng md5 ${got} ≠ ${exp} (CDN còn bản cũ?) — chờ rồi thử lại"
+              else
+                echo "  ${label} lần ${i}: HTTP ${code}"
+              fi
+              sleep "$WAIT"
+            done
+            return 1
+          }
+          # Ba kết cục, phân biệt rõ cho TỪNG đích — và "không bao giờ 200" thì bỏ qua CÓ LÝ DO chứ
+          # không tô xanh giả, vì runner của GitHub từng không ra được internet của Pages.
+          fail_hard=no; unverifiable=no
+          if ! check_url "${base}" "$want" "trang"; then
+            if [ "$code" = "200" ]; then fail_hard=yes; else unverifiable=yes; fi
+          fi
+          if ! check_url "${base}c4/README.md" "$c4_want" "c4/README.md"; then
+            if [ "$code" = "200" ]; then fail_hard=yes; else unverifiable=yes; fi
+          fi
+          if [ "$fail_hard" = "yes" ]; then
+            echo "::error::Một đích LỆCH bản trong repo sau ${TRIES} lần thử / ~$((TRIES*WAIT)) s mỗi đích."
+            echo "  SOURCE.json.page_md5 : ${want}"
+            echo "  c4/README.md kỳ vọng : ${c4_want}"
+            exit 1
+          fi
+          if [ "$unverifiable" = "yes" ]; then
+            echo "::warning::KHÔNG XÁC MINH ĐƯỢC từ runner (HTTP ${code} sau ~$((TRIES*WAIT)) s). Deploy đã thành công theo API; thường gặp khi Pages vừa bật nên CDN chưa có. Mở ${PAGE_URL} trong trình duyệt để kiểm bằng mắt."
+          fi
           exit 0

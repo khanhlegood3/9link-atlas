@@ -407,10 +407,12 @@ từ nhẹ hơn.</p>
     được SHA của chính commit thêm workflow vì một file không thể chứa SHA của commit sẽ sinh ra nó.
     <span class="tag t-meas">Đã đo</span> <a class="jump" href="#gates">→ Cổng kiểm</a></p></li>
 
-  <li><p><b>Bảng so sánh 9 repo mới viết được 1/9.</b> Tám repo còn lại trong hệ sinh thái trả
-    <b>403</b> cho token của phiên làm việc — chúng <i>tồn tại</i>, chỉ nằm ngoài phạm vi. Ô để
-    <b>trống có chủ ý</b>, kèm lý do và lệnh kiểm tra trong 20 giây. Không điền bằng suy đoán.
-    <span class="tag t-na">Chưa đo được</span> <a class="jump" href="#ecosystem">→ Hệ sinh thái</a></p></li>
+  <li><p><b>Bảng so sánh 9 repo đã đo đủ 9/9 — nhưng MỘT CỘT vẫn để trống có chủ ý.</b> Ngày
+    2026-11-10 quyền thông (<b>9/9 = 200</b>) và cả chín repo đã được đo bằng cùng một bộ đo; bảng
+    trong <code>docs/so-sanh-cac-repo.md</code> nay <b>do máy sinh</b>, không một số nào gõ tay. Riêng cột
+    <i>"Quan hệ với 9Link"</i> vẫn chỉ in <b>bằng chứng</b> — tên trong <code>package.json</code> và số đường
+    dẫn trùng — chứ chưa kết luận fork / viết lại / thử nghiệm bỏ, vì chưa ai diff <b>NỘI DUNG</b> của
+    những file trùng tên đó. <span class="tag t-meas">Đã đo</span> <a class="jump" href="#ecosystem">→ Hệ sinh thái</a></p></li>
 </ol>
 </section>
 
@@ -669,8 +671,12 @@ Mà lưu lượng thật thì <span class="tag t-na">Chưa đo được</span> �
 
 <section class="chapter" id="dims">
 <h3>1 · Bảng 18 chiều</h3>
-<p class="small">Bấm vào tiêu đề cột để sắp xếp. Lọc theo nhãn độ tin cậy. Cột "8 repo còn lại" cố ý
-trống — xem <a href="#ecosystem">chương Hệ sinh thái</a>.</p>
+<p class="small">Bấm vào tiêu đề cột để sắp xếp. Lọc theo nhãn độ tin cậy. Cột "8 repo còn lại" <b>vẫn
+để trống</b>, nhưng <b>lý do đã đổi</b>: không còn là <i>không đọc được</i> — từ 2026-11-10 cả 9/9 repo
+đọc được và đã được khảo sát. Lý do nay là <b>hai nơi này đo ở hai cây khác nhau</b>: bảng này ghim
+<code>2d24b47</code>, còn số của tám repo kia thuộc cây của chính từng repo và nằm ở <b>§3.1 của
+<code>docs/so-sanh-cac-repo.md</code></b>, do máy sinh. Chép chúng sang đây là tạo ra <b>bản sao thứ hai</b>
+của một số đo — đúng thứ mà cả trang này nói về. Xem <a href="#ecosystem">chương Hệ sinh thái</a>.</p>
 <div class="filters" role="group" aria-label="Lọc theo nhãn độ tin cậy">
   <span class="lb">Lọc:</span>
   <button class="fchip" data-f="all" aria-pressed="true">Tất cả (18)</button>
@@ -687,24 +693,24 @@ trống — xem <a href="#ecosystem">chương Hệ sinh thái</a>.</p>
   <th>8 repo còn lại</th>
 </tr></thead>
 <tbody>
-<tr data-t="meas"><td><b>Ngôn ngữ / khung</b></td><td class="v">next@15.1.6 · react@19.0.0 · prisma@6.2.1 · node &gt;=20</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>Hình dạng monorepo</b></td><td class="v">apps=[web] · packages=[db, n8n-nodes-9link, sdk] · pnpm@9.15.0 + turbo</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>LOC nguồn</b> (mọi phần mở rộng)</td><td class="v">85.998 dòng / 552 file</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>LOC unit-test</b></td><td class="v">50.703 dòng / 240 file · tỉ lệ 0,59</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>LOC e2e</b></td><td class="v">36.228 dòng / 83 file</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>LOC chỉ .ts/.tsx</b></td><td class="v">src 72.457 · "phi-test" (src+e2e) 108.685</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>Data layer</b></td><td class="v">34 model · 0 enum · 34 @@map · 55 migration · postgresql</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>Engine dữ liệu</b></td><td class="v">postgres + clickhouse + redis + mongo</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>Cổng GATE-*</b></td><td class="v">47 tên phân biệt do scripts/verify.sh gọi</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>CI thật</b></td><td class="v">0 file trong .github/workflows/ trên cây 2d24b47<br>1 file (atlas-ci.yml — chỉ chạy cổng Atlas, không đăng gì) từ commit sau ⇒ nợ N-1 CHƯA đóng</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>Bề mặt HTTP</b></td><td class="v">27 route.ts · 28 page.tsx (App Router)</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>i18n</b></td><td class="v">1.683 khoá lá × 3 locale [ar · en · vi] — BẰNG NHAU</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>Real-time</b></td><td class="v">0 file mã sản phẩm dùng SSE/WebSocket</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>Tài liệu</b></td><td class="v">7 file docs/c4 · 50 ADR · 119 .md · 28 khối Mermaid / 9 file</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>License</b> (đọc thân file)</td><td class="v">AGPL-3.0, 687 dòng, carve-out ee/ ở dòng 21–22</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>Open-core</b></td><td class="v">ee/ 50 file · ee/LICENSE=Commercial · swap entry ở next.config.mjs</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>Deploy — compose</b></td><td class="v">deploy/ 6 · infra/ 9 (6 có profiles:) · app 2 · demo 6 · edge external</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
-<tr data-t="meas"><td><b>Dockerfile CMD</b></td><td class="v">["node","apps/web/server.js"]</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>Ngôn ngữ / khung</b></td><td class="v">next@15.1.6 · react@19.0.0 · prisma@6.2.1 · node &gt;=20</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>Hình dạng monorepo</b></td><td class="v">apps=[web] · packages=[db, n8n-nodes-9link, sdk] · pnpm@9.15.0 + turbo</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>LOC nguồn</b> (mọi phần mở rộng)</td><td class="v">85.998 dòng / 552 file</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>LOC unit-test</b></td><td class="v">50.703 dòng / 240 file · tỉ lệ 0,59</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>LOC e2e</b></td><td class="v">36.228 dòng / 83 file</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>LOC chỉ .ts/.tsx</b></td><td class="v">src 72.457 · "phi-test" (src+e2e) 108.685</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>Data layer</b></td><td class="v">34 model · 0 enum · 34 @@map · 55 migration · postgresql</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>Engine dữ liệu</b></td><td class="v">postgres + clickhouse + redis + mongo</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>Cổng GATE-*</b></td><td class="v">47 tên phân biệt do scripts/verify.sh gọi</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>CI thật</b></td><td class="v">0 file trong .github/workflows/ trên cây 2d24b47<br>1 file (atlas-ci.yml — chỉ chạy cổng Atlas, không đăng gì) từ commit sau ⇒ nợ N-1 CHƯA đóng</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>Bề mặt HTTP</b></td><td class="v">27 route.ts · 28 page.tsx (App Router)</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>i18n</b></td><td class="v">1.683 khoá lá × 3 locale [ar · en · vi] — BẰNG NHAU</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>Real-time</b></td><td class="v">0 file mã sản phẩm dùng SSE/WebSocket</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>Tài liệu</b></td><td class="v">7 file docs/c4 · 50 ADR · 119 .md · 28 khối Mermaid / 9 file</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>License</b> (đọc thân file)</td><td class="v">AGPL-3.0, 687 dòng, carve-out ee/ ở dòng 21–22</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>Open-core</b></td><td class="v">ee/ 50 file · ee/LICENSE=Commercial · swap entry ở next.config.mjs</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>Deploy — compose</b></td><td class="v">deploy/ 6 · infra/ 9 (6 có profiles:) · app 2 · demo 6 · edge external</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
+<tr data-t="meas"><td><b>Dockerfile CMD</b></td><td class="v">["node","apps/web/server.js"]</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo đủ 18 chiều — một phần đã đo ở §3.1</td></tr>
 </tbody></table></div>
 
 <h4>Sáu chiều phải gọi GitHub API</h4>
@@ -1261,25 +1267,28 @@ mượn uy tín của một lượt chạy đã không xảy ra.</div>
 <div class="part" id="part-5">
   <div class="kicker">Phần V</div>
   <h2>Hệ sinh thái và việc còn lại</h2>
-  <p>9Link không đứng một mình: có <b>9 repo</b> dưới cùng một chủ sở hữu, và một bảng so sánh chúng
-  đang được dựng trong <code>docs/so-sanh-cac-repo.md</code> (456 dòng). Bảng đó mới viết được
-  <b>1/9</b>, và lý do là một câu chuyện đáng kể về quyền truy cập hơn là về kỹ thuật.</p>
+  <p>9Link không đứng một mình: có <b>9 repo</b> dưới cùng một chủ sở hữu, và bảng so sánh chúng nằm
+  trong <code>docs/so-sanh-cac-repo.md</code> — <b>do máy sinh</b> từ <code>survey.json</code> bằng
+  <code>scripts/survey-to-md.mjs</code>, không một số nào gõ tay. Từ <b>2026-11-10</b> bảng đó đủ <b>9/9</b>.
+  Trước ngày ấy nó dừng ở 1/9 suốt nhiều ngày, <!-- atlas-allow-stale-number: "1/9" là TRẠNG THÁI CŨ, kể lại có ngày -->
+  và lý do là một câu chuyện đáng kể về quyền truy cập hơn là về kỹ thuật — nên câu chuyện đó được giữ
+  nguyên văn bên dưới, như một bản ghi có ngày, thay vì bị xoá đi cho đẹp.</p>
 </div>
 
 <section class="chapter" id="ecosystem">
-<h3>1 · Chín repo: một đã đo, tám để trống</h3>
+<h3>1 · Chín repo: cả chín đã đo, và một cột vẫn để trống có chủ ý</h3>
 <div class="tw"><table id="eco">
 <thead><tr><th>Repo</th><th>Đọc được mã nguồn</th><th>Ý nghĩa của mã trạng thái</th></tr></thead>
 <tbody>
 <tr><td><b>9Link</b></td><td><span class="tag t-meas">200</span></td><td>private nhưng GitHub App <b>được cài</b> ⇒ đọc/ghi bình thường, <code>push=true</code></td></tr>
-<tr><td>9Link-V2</td><td><span class="tag t-na">403</span></td><td rowspan="8"><b>Tồn tại</b> (nếu không đã là 404) nhưng <b>nằm ngoài danh sách repo của installation</b>. Đã kiểm 5 lần, lần nào cũng 8/8.</td></tr>
-<tr><td>9Link-V3</td><td><span class="tag t-na">403</span></td></tr>
-<tr><td>9Link-new</td><td><span class="tag t-na">403</span></td></tr>
-<tr><td>9link-browser</td><td><span class="tag t-na">403</span></td></tr>
-<tr><td>9do</td><td><span class="tag t-na">403</span></td></tr>
-<tr><td>olacity</td><td><span class="tag t-na">403</span></td></tr>
-<tr><td>olacity-v1</td><td><span class="tag t-na">403</span></td></tr>
-<tr><td>olacity-docs-web</td><td><span class="tag t-na">403</span></td></tr>
+<tr><td>9Link-V2</td><td><span class="tag t-meas">200</span></td><td rowspan="8"><b>Đã đọc và đã đo, ngày 2026-11-10</b> (lượt khảo sát thứ ba). Con số của từng repo — LOC, commit 90 ngày, Prisma, compose, LICENSE — nằm ở <b>§3.1 của <code>docs/so-sanh-cac-repo.md</code></b>, và bảng đó <b>do máy sinh</b> từ <code>survey.json</code>. Trang này <b>cố ý không chép lại</b> những số ấy: một con số nằm ở hai nơi là một con số sớm muộn cũng cãi nhau, mà hai nơi này lại đo ở <b>hai cây khác nhau</b> (trang này ở <code>2d24b47</code>, §3.1 ở cây của chính từng hàng).</td></tr>
+<tr><td>9Link-V3</td><td><span class="tag t-meas">200</span></td></tr>
+<tr><td>9Link-new</td><td><span class="tag t-meas">200</span></td></tr>
+<tr><td>9link-browser</td><td><span class="tag t-meas">200</span></td></tr>
+<tr><td>9do</td><td><span class="tag t-meas">200</span></td></tr>
+<tr><td>olacity</td><td><span class="tag t-meas">200</span></td></tr>
+<tr><td>olacity-v1</td><td><span class="tag t-meas">200</span></td></tr>
+<tr><td>olacity-docs-web</td><td><span class="tag t-meas">200</span></td></tr>
 <tr><td class="blank">zzz-khong-ton-tai-xyz-99</td><td><span class="tag t-na">404</span></td><td><b>Đối chứng</b> — repo không tồn tại phải ra 404, để biết 403 là phán quyết thật</td></tr>
 <tr><td class="blank">MetaGPT · NotionNext · FlowX · lila</td><td><span class="tag t-meas">200</span></td><td><b>Đối chứng</b> — public, nhưng <b>không</b> chứng minh App có quyền</td></tr>
 </tbody></table></div>
@@ -1287,7 +1296,14 @@ mượn uy tín của một lượt chạy đã không xảy ra.</div>
 với "mạng hỏng". Chỉ khi <i>trong cùng một lượt</i> repo không tồn tại ra 404, repo public ra 200,
 và repo private trong phạm vi ra 200 với <code>push=true</code>, thì 403 mới có nghĩa là
 <b>"repo này tồn tại và bạn không được cấp"</b>.</p>
-<div class="call bad"><span class="h">Vì sao "đã tick trong Settings" mà vẫn 403</span>
+<p><b>Cập nhật 2026-11-10 — quyền đã thông, và chẩn đoán trong hộp dưới đây hoá ra đúng.</b> Cả
+<b>9/9</b> repo trả <b>200</b> trong lượt khảo sát thứ ba, nên tám ô <code>403</code> ở bảng trên đã thành
+<code>200</code>. Thứ mở khoá <b>không phải</b> một dấu tick trong Settings mà là một <b>token mới</b> —
+đúng như hộp dưới đây đã viết từ khi trang này còn đo ở <code>2d24b47</code>. Hai dòng <b>đối chứng</b>
+(404 và public) được giữ nguyên: chúng là thứ làm cho một mã trạng thái có nghĩa, kể cả khi mã đó nay
+là 200. Phần còn lại của trang — 18 chiều, các thanh trượt, quiz — <b>vẫn thuộc cây <code>2d24b47</code></b>;
+chỉ bảng quyền này được kiểm lại sau, và nó tự khai ngày ở ngay trong ô.</p>
+<div class="call bad"><span class="h">Vì sao "đã tick trong Settings" mà vẫn 403 <span class="tag t-na">Bản ghi 2026-11-09 — đã hết hiệu lực</span></span>
 Token của một phiên agent là <b>installation token</b>, và GitHub cấp nó kèm <b>danh sách repo chốt
 tại lúc cấp</b> (sống khoảng 1 giờ). Tick thêm repo trong Settings <b>không</b> làm một token
 <i>đã cấp</i> rộng ra — nó vẫn mang danh sách cũ tới khi có một token <b>mới</b>. Vậy việc cần làm
@@ -1354,11 +1370,11 @@ chúng là <i>nợ</i> chứ không phải <i>việc còn lại</i>.</p>
 <div class="tw"><table>
 <thead><tr><th>#</th><th>Việc</th><th>Chặn bởi</th><th>Trạng thái</th></tr></thead>
 <tbody>
-<tr><td class="v">1</td><td>Cấp lại token để đọc 8 repo</td><td>—</td><td><span class="tag t-na">Chưa thông</span> — 8/8 vẫn 403 qua 5 lần kiểm</td></tr>
-<tr><td class="v">2</td><td>Đo 8 repo bằng đúng 18 chiều</td><td>(1)</td><td><span class="tag t-meas">Công cụ xong</span> — chỉ còn là chạy</td></tr>
-<tr><td class="v">3</td><td><code>docs/c4/</code> + white paper tiếng Việt cho từng repo</td><td>(2)</td><td><span class="tag t-meas">Cổng xong</span> (<code>GATE-VNDOC</code>) — nội dung chờ (2)</td></tr>
-<tr><td class="v">4</td><td>PR riêng từng repo, merge từng cái</td><td>(2)(3)</td><td><span class="tag t-na">Chờ (1)</span></td></tr>
-<tr><td class="v">5</td><td>Điền nốt file hub so sánh</td><td>(2)</td><td><span class="tag t-writ">Phần không phụ thuộc 8 repo đã làm</span></td></tr>
+<tr><td class="v">1</td><td>Cấp lại token để đọc 8 repo</td><td>—</td><td><span class="tag t-meas">Đã thông — 2026-11-10</span> 9/9 trả 200. Thứ mở khoá là một <b>token mới</b>, không phải dấu tick trong Settings</td></tr>
+<tr><td class="v">2</td><td>Đo 8 repo bằng đúng 18 chiều</td><td>(1)</td><td><span class="tag t-writ">Đo được một phần</span> — 9/9 đã khảo sát, nhưng theo bộ chiều của <code>survey.json</code>, <b>hẹp hơn 18 chiều</b> của bảng trên</td></tr>
+<tr><td class="v">3</td><td><code>docs/c4/</code> + white paper tiếng Việt cho từng repo</td><td>(2)</td><td><span class="tag t-meas">Cổng xong</span> (<code>GATE-VNDOC</code>) — nội dung chờ; <b>hết bị (1) chặn</b></td></tr>
+<tr><td class="v">4</td><td>PR riêng từng repo, merge từng cái</td><td>(2)(3)</td><td><span class="tag t-na">Chưa bắt đầu</span> — không còn chờ (1)</td></tr>
+<tr><td class="v">5</td><td>Điền nốt file hub so sánh</td><td>(2)</td><td><span class="tag t-meas">Xong — §3.1 đủ 9/9</span> bảng <b>do máy sinh</b> từ <code>survey.json</code>, không số nào gõ tay</td></tr>
 <tr><td class="v">6</td><td>CI thật cho 47 cổng (nợ N-1)</td><td>—</td><td><span class="tag t-na">Chưa bắt đầu</span></td></tr>
 </tbody></table></div>
 <p><b>Năm tiêu chí huỷ</b> đã được viết trong kế hoạch AgentWorks, cùng một khung thời gian
@@ -1410,7 +1426,7 @@ của bảng đã công bố. Đã chạy lại ngày 2026-11-09 trên cây <cod
 <pre><code>node scripts/check-vn-docs.mjs               # = GATE-VNDOC trong verify.sh
 node scripts/check-vn-docs.mjs --self-test   # mỗi phép phải ĐỎ trên file hỏng VÀ IM trên file đúng
 node scripts/check-atlas.mjs                 # = GATE-VNDOC (phần Atlas): DỰNG trang này bằng jsdom rồi BẤM thật
-node scripts/check-atlas.mjs --self-test     # 12 đột biến, mỗi cái phải làm ĐỎ đúng phép kiểm của nó</code></pre>
+node scripts/check-atlas.mjs --self-test     # 14 đột biến, mỗi cái phải làm ĐỎ đúng phép kiểm của nó</code></pre>
 <p>Kết quả trên <code>docs/</code>: <b>119 file · 145 link tương đối · 28/28 khối Mermaid parse được ·
 0 lỗi · 0 cảnh báo</b>. <code>--self-test</code> bắt buộc phải đạt <b>4/4</b>, theo một bài học của
 chính repo: <i>một cổng chưa từng đỏ là một cổng chưa được biết là có tác dụng</i>. Mỗi phép kiểm có
@@ -1450,7 +1466,7 @@ ignore, nên nó không tồn tại giữa các phiên làm việc.
 <tr><td><code>docs/WHITEPAPER.md</code> — 1.176 dòng</td><td>Toàn bộ khẳng định về sản phẩm, kinh doanh, kiến trúc</td><td>Là tài liệu <b>tự khai</b>; ba chỗ lệch số đo được ghi ở <a href="#drift">chương Lệch</a></td></tr>
 <tr><td><code>scripts/repo-measure.mjs</code> trên <code>2d24b47</code></td><td>Mọi con số <span class="tag t-meas">Đã đo</span></td><td>Phủ 12/18 chiều; 6 chiều cần API</td></tr>
 <tr><td>GitHub API qua <code>gh</code></td><td>6 chiều API + cổng quyền + đối chứng</td><td><code>license.spdx_id</code> <b>không đáng tin</b> — phải đọc thân file</td></tr>
-<tr><td><code>docs/so-sanh-cac-repo.md</code> — 456 dòng</td><td>18 định nghĩa, §4.1–§4.3 về lỗi đo, 6 luật</td><td>Bảng 9 repo mới có 1/9 cột</td></tr>
+<tr><td><code>docs/so-sanh-cac-repo.md</code></td><td>18 định nghĩa, §4.1–§4.3 về lỗi đo, 6 luật, bảng §3.1 <b>do máy sinh</b></td><td>Bảng 9 repo đủ 9/9 từ 2026-11-10; cột "Quan hệ" vẫn chỉ in bằng chứng. <b>Không ghi số dòng của file</b> ở đây nữa — đó là một bản sao trôi theo mỗi commit, đúng loại số mà cổng A6 sinh ra để bắt</td></tr>
 <tr><td><code>docs/adr/</code> — 50 ADR · <code>docs/c4/</code> — 7 file</td><td>Quyết định kiến trúc, luật AW-1…AW-9</td><td>ADR ghi <i>quyết định</i>, không ghi <i>trạng thái triển khai</i></td></tr>
 <tr><td><code>docs/agentworks/</code> — 7 file · <code>DECISIONS.md</code></td><td>Kế hoạch runtime, nợ N-1…N-7, ẩn số M-1…M-7</td><td>Kế hoạch, không phải hiện trạng</td></tr>
 </tbody></table></div>
@@ -1461,7 +1477,11 @@ ignore, nên nó không tồn tại giữa các phiên làm việc.
     <code>docs/WHITEPAPER.md</code> và các script trong <code>scripts/</code>. Nếu trang này và hai nơi
     đó khác nhau, <b>trang này sai</b>.</li>
   <li><b>Mọi con số hết hạn ngay khi có một commit.</b> Trang này đo tại <code>2d24b47</code>, ngày
-    2026-11-09. Repo này đã đổi số LOC hai lần trong hai ngày.</li>
+    2026-11-09. Repo này đã đổi số LOC hai lần trong hai ngày. <b>Một ngoại lệ, khai rõ:</b> bảng
+    quyền truy cập 9 repo ở <a href="#ecosystem">Phần V</a> được <b>kiểm lại ngày 2026-11-10</b> và đổi
+    từ 8 dòng <code>403</code> sang <b>9/9 = <code>200</code></b>; <b>toàn bộ phần còn lại của trang vẫn
+    thuộc cây <code>2d24b47</code></b>. Nghĩa là trang này mang <b>hai ngày đo</b>, và nó tự khai điều đó
+    thay vì để người đọc tưởng cả trang đều mới.</li>
   <li><b>Không có sơ đồ.</b> Bản Markdown trong repo có <b>28 khối Mermaid</b> trên 9 file và chúng
     parse được; trang HTML này cố ý không nhúng lại chúng, vì một bản vẽ lại bằng tay là một nguồn
     sự thật thứ hai. Muốn xem sơ đồ, đọc <code>docs/c4/</code> và <code>docs/agentworks/</code>.</li>
