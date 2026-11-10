@@ -30,9 +30,11 @@ Toàn bộ những gì ở đây:
 | `index.html` | trang Atlas — một file HTML tự chứa, CSS/JS nội tuyến, 0 tài nguyên ngoài. Số byte và md5 xem `SOURCE.json` | `scripts/check-atlas.mjs` |
 | `c4/*.md` | bộ mô hình C4 (7 file): System Context · Container · Component · Code · Dynamic views · Deployment · README | `scripts/check-vn-docs.mjs` |
 | `WHITEPAPER.md` | **BẢN CÔNG KHAI, đã lược**, của white paper tiếng Việt — xem mục riêng bên dưới | `scripts/redact-whitepaper.mjs` |
+| `compare/survey.json` | **bằng chứng máy đo** cho bảng so sánh 9 repo, **đã lược đường dẫn máy cá nhân** — tầng MÁY, xem mục riêng bên dưới | `scripts/redact-survey.mjs` (47 phép kiểm) · `scripts/survey-to-md.mjs` (bảng §3.1 phải sinh lại đúng từ nó) |
+| `compare/DIFFERENCES.md` | **khác biệt giữa 9 repo, do CON NGƯỜI cập nhật** — tầng NGƯỜI, **không cổng nào kiểm nó**, và đó là cố ý | — (xem mục bên dưới) |
 | `SOURCE.json` | **nguồn gốc của đúng bytes đang nằm ở đây** — đọc mục dưới | — |
 | `README.md` | file này | — |
-| `.github/workflows/deploy.yml` | đăng lên GitHub Pages, sau khi kiểm toàn vẹn cả trang, bộ C4 lẫn white paper | — |
+| `.github/workflows/deploy.yml` | đăng lên GitHub Pages, sau khi kiểm toàn vẹn cả trang, bộ C4, white paper lẫn bằng chứng `compare/` | — |
 | `.gitignore` | bỏ qua `_site/` (thư mục artifact của workflow) | — |
 
 ### ⚠️ `WHITEPAPER.md` ở đây là BẢN LƯỢC — và đây là đúng những gì bị lược
@@ -72,6 +74,72 @@ cần hiện trạng thì đo lại trên cây đang đứng chứ đừng tin m
 
 Trang `index.html` thì khác: nó ghim cây số liệu của riêng nó, và khai cây đó ngay trong thân trang
 (*"Trang này đo tại `SHA`"*). Hai tài liệu, hai ngày đo — và cả hai đều tự khai, đó là điểm chung.
+
+### ⚠️ `compare/` có HAI TẦNG, và chỉ MỘT tầng bị kiểm
+
+Thư mục `compare/` khác mọi thứ còn lại trong repo này ở một điểm quyết định: **nó là nơi duy nhất con
+người được sửa**. Bốn payload kia (`index.html` · `c4/` · `WHITEPAPER.md` · `SOURCE.json`) là ảnh chụp —
+`scripts/publish-atlas.sh` bên repo gốc ghi đè toàn bộ mỗi lần xuất bản, nên ở đó "md5 lệch con tem" luôn
+nghĩa là "có ai sửa tay sau khi xuất bản". Ở `compare/` thì cùng một dấu hiệu đó, trên đúng một file,
+lại nghĩa là "thư mục này đang được dùng đúng mục đích".
+
+Vì vậy ranh giới được định nghĩa bằng **con tem**, không bằng tên file:
+
+| Tầng | File | Publisher làm gì | Cổng `Kiểm toàn vẹn` làm gì |
+|---|---|---|---|
+| **MÁY** | những tên có trong `SOURCE.json.cmp_manifest` (hiện tại: `survey.json`) | chép lại **mỗi lần** xuất bản, `cmp` từng byte | kiểm md5 từng file; một file `.json`/`.txt` trong `compare/` mà **không** có trong manifest là **lỗi** — số liệu máy đo phải truy vết được |
+| **NGƯỜI** | mọi thứ còn lại trong `compare/` (hiện tại: `DIFFERENCES.md`) | tạo **một lần** khi ở đích chưa có, rồi **không bao giờ ghi đè** | **không** kiểm md5, **không** báo lệch; chỉ **in ra lời khai** rằng nó đang bỏ qua, và bỏ qua cái gì |
+
+Việc bỏ qua được khai báo **ba lần** để không ai phải đoán: trong log của bước `Kiểm toàn vẹn`
+(`✅ BỎ QUA (có chủ đích): …`), trong khoá `cmp_human_files` của `SOURCE.json`, và ngay trong chính
+`DIFFERENCES.md`. `cmp_human_files` là **ảnh chụp lúc xuất bản** — bạn thêm file vào tầng người sau đó
+thì bước kiểm vẫn bỏ qua đúng, vì nó **quét đĩa** chứ không đọc con tem; chênh lệch giữa tem và đĩa
+được in thành `ℹ️` (tin tốt: có người vừa vào cập nhật), không phải lỗi.
+
+**Ba hệ quả phải nói thẳng, vì chúng là cái giá của thiết kế chứ không phải lỗi:**
+
+1. **`compare/DIFFERENCES.md` nằm NGOÀI mọi cổng ngôn ngữ.** Repo gốc có `GATE-VNDOC` soát lỗi chính tả,
+   link gãy và cú pháp Mermaid cho tài liệu tiếng Việt; file này **không** được cổng đó chạm tới, vì nó
+   không nằm trong repo gốc — nó chỉ tồn tại ở đây. Lỗi chính tả trong đó sẽ không ai bắt. Đổi lại: bạn
+   sửa được nó ngay trên GitHub mà không cần chạy lại bất kỳ cổng nào.
+2. **Những con số trong §1 của nó là ẢNH CHỤP ĐÔNG CỨNG**, kèm SHA và ngày đo. Chúng được **máy chép
+   nguyên văn** từ bảng §3.1 lúc tạo file lần đầu — không gõ tay — nhưng từ lúc đó về sau **không cổng
+   nào cập nhật hay kiểm chúng**. Nếu §1 và `survey.json` cãi nhau, **`survey.json` thắng**, và file tự
+   nói điều đó ở đầu trang. §2 thì chỉ **trỏ** tới hàng tương ứng trong `survey.json` chứ không chép số:
+   chín bản sao của một phép đo nằm trong cùng một thư mục thì sẽ trôi mà không gì bắt được.
+3. **`survey.txt` — log thô của lượt đo — cố tình KHÔNG có ở đây.** Nó chứa đường dẫn máy cá nhân của
+   người chạy bộ đo: thư mục nhà của người đó, và một thư mục tạm mà macOS đặt tên bằng một hash
+   **theo tài khoản**. File này cố tình **không chép nguyên văn** hai đường dẫn ấy ra đây, vì chép một
+   đường dẫn cá nhân vào tài liệu công khai để "giải thích rằng nó đã bị lược" thì chính là công bố nó
+   — đúng lỗi mà việc lược sinh ra để ngăn. Một đường dẫn như vậy
+   vào lịch sử git công khai thì ở đó vĩnh viễn: xoá file ở commit sau **không** xoá được nó khỏi lịch sử.
+   `survey.json` là bản đã được quét 10 mẫu và sạch.
+
+#### `compare/survey.json` ở đây là BẢN ĐÃ LƯỢC — và đây là đúng những gì bị lược
+
+Cũng như `WHITEPAPER.md`, file này **không phải bản nguyên văn** trong repo nguồn. Bản gốc chứa **9**
+đường dẫn `offline.target` — một cho mỗi repo — trỏ vào thư mục tạm mà bộ đo đã clone repo về. Tên thư
+mục tạm đó do hệ điều hành sinh ra và là một hash **theo tài khoản** của người chạy bộ đo, tức nó nhận
+diện được một máy cụ thể. `scripts/redact-survey.mjs` thay mỗi đường dẫn bằng
+`<đường dẫn cục bộ đã lược>/<tên repo>`: bỏ phần nhận diện máy, **giữ lại tên repo** vì đó là phần có
+nghĩa với người đọc. Số đường dẫn đã lược nằm ở `SOURCE.json.cmp_redacted_paths`.
+
+Ba điều kiện đi kèm, và cả ba được kiểm **lúc xuất bản** chứ không phải lời hứa:
+
+| Điều kiện | Vì sao không thể bỏ |
+|---|---|
+| Bản công bố **sạch**: 0/12 mẫu biết tên + 0 phép dò tổng quát | Một danh sách mẫu **không phải** là sự thật mặt đất — phép dò tổng quát (bất kỳ chuỗi nào trông như đường dẫn tuyệt đối) là vế bắt được dạng chưa ai nghĩ tới |
+| Bộ lược **im lặng là lỗi**: lược được 0 đường dẫn thì ĐỎ | Một bộ lược câm thì xanh vĩnh viễn: hoặc nguồn đã đổi hình dạng, hoặc phép nhận diện mù — cả hai đều nghĩa là nó không còn bảo vệ được gì |
+| Bảng §3.1 sinh từ bản đã lược **giống hệt từng byte** bản sinh từ bản gốc | Nếu không thì "đã lược" chỉ là một lời hứa. Một bộ lược làm méo bằng chứng thì **tệ hơn** không lược, vì bản méo vẫn được tin là bằng chứng |
+
+Và bước `Kiểm toàn vẹn` ở trên còn quét **toàn bộ cây công khai** bằng một phép dò mức hẹp (chỉ những
+tiền tố đường dẫn có thể mang danh tính), vì lược một artefact **không** lược được phần disclosure: một
+câu văn giải thích rằng đường dẫn đã bị lược, mà chép nguyên văn đường dẫn đó ra, thì chính là công bố
+nó. Phép dò mức hẹp cố ý **không** kết án thư mục tạm của runner CI — một cổng kết án nhầm thứ vô hại
+thì sẽ bị bỏ qua, và tới lúc nó đúng cũng không ai nghe.
+
+Muốn sửa khác biệt giữa các repo? **Sửa thẳng `compare/DIFFERENCES.md` trong repo này** — không cần quay
+về repo gốc, không cần xuất bản lại, và lần xuất bản kế tiếp sẽ giữ nguyên từng byte phần bạn viết.
 
 ## `SOURCE.json` — vì sao nó tồn tại
 

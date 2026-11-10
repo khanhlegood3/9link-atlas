@@ -180,6 +180,108 @@ jobs:
             exit 1
           fi
           echo "✅ khớp WHITE PAPER: ${wp_file} đúng md5 bản đã qua cổng lược · tem khai lược ${wp_blocks} khối · §12.2/§12.3 thật sự vắng mặt"
+
+          # ── compare/: HAI LANE, và bước này chỉ được phép chạm MỘT lane ──────────────────────────
+          # `compare/` khác ba payload trên ở một điểm quyết định: nó là thư mục DUY NHẤT trong repo
+          # này mà CON NGƯỜI được sửa. Ba payload kia là ảnh chụp — ghi đè toàn bộ mỗi lần xuất bản,
+          # nên "md5 lệch" ở đó luôn nghĩa là "có ai sửa tay". Ở `compare/` thì "md5 lệch" trên file
+          # người sửa nghĩa là "đúng cái việc mà thư mục này tồn tại để phục vụ".
+          # Vì vậy luật ở đây là: `cmp_manifest` định nghĩa lane MÁY SINH. MỌI THỨ trong compare/ không
+          # có tên trong manifest thì thuộc lane NGƯỜI SỬA và bước này KHÔNG được kiểm md5 nó, KHÔNG
+          # được báo lỗi vì nó khác con tem. Kiểm cả hai lane bằng một phép là biến cổng bảo vệ repo
+          # thành cổng chống lại người dùng repo.
+          cmp_dir=$(grep -o '"cmp_dir"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"cmp_dir"[[:space:]]*:[[:space:]]*"//; s/"$//' || true)
+          cmp_files=$(grep -o '"cmp_files"[[:space:]]*:[[:space:]]*[0-9]\+' SOURCE.json | sed -E 's/^"cmp_files"[[:space:]]*:[[:space:]]*//' || true)
+          cmp_manifest=$(grep -o '"cmp_manifest"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"cmp_manifest"[[:space:]]*:[[:space:]]*"//; s/"$//' || true)
+          cmp_human_stamp=$(grep -o '"cmp_human_files"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"cmp_human_files"[[:space:]]*:[[:space:]]*"//; s/"$//' || true)
+          if [ -z "${cmp_dir:-}" ] || [ -z "${cmp_files:-}" ] || [ -z "${cmp_manifest:-}" ]; then
+            echo "::error::SOURCE.json thiếu cmp_dir/cmp_files/cmp_manifest. Repo này do scripts/publish-atlas.sh sinh ra; một con tem thiếu khoá nghĩa là nó được viết bởi một bản script cũ hơn nội dung đang nằm ở đây — tức bằng chứng so sánh 9 repo đang ở đây mà KHÔNG được truy vết."
+            exit 1
+          fi
+          if [ ! -d "$cmp_dir" ]; then
+            echo "::error::thiếu thư mục ${cmp_dir}/ trong khi SOURCE.json khai ${cmp_files} file."
+            exit 1
+          fi
+          cmp_seen=0
+          for pair in $cmp_manifest; do
+            n="${pair%%=*}"; m="${pair##*=}"
+            if [ "$n" = "$pair" ] || [ -z "$m" ]; then
+              echo "::error::một cặp trong cmp_manifest sai dạng 'tên=md5': '${pair}'."
+              exit 1
+            fi
+            if [ ! -f "${cmp_dir}/${n}" ]; then
+              echo "::error::tem khai ${cmp_dir}/${n} nhưng file không có ở đây."
+              exit 1
+            fi
+            g=$(md5sum "${cmp_dir}/${n}" | cut -d' ' -f1)
+            if [ "$m" != "$g" ]; then
+              echo "::error::${cmp_dir}/${n} KHÁC bằng chứng đã qua cổng ở 9Link: tem ghi ${m}, file là ${g}. Đừng sửa md5 trong SOURCE.json cho khớp — hãy xuất bản lại từ 9Link."
+              exit 1
+            fi
+            cmp_seen=$((cmp_seen+1))
+          done
+          if [ "$cmp_seen" != "$cmp_files" ]; then
+            echo "::error::tem khai ${cmp_files} file máy sinh trong ${cmp_dir}/ nhưng chỉ đối chiếu được ${cmp_seen} cặp trong cmp_manifest."
+            exit 1
+          fi
+          # VẾ NGƯỢC CHIỀU, và nó không suy ra được từ md5 — cùng họ với phép kiểm file C4 mồ côi:
+          # một file SỐ LIỆU (json/txt) nằm trong compare/ mà không được tem khai thì nó là một bằng
+          # chứng KHÔNG truy vết được, đang được phục vụ công khai từ một repo công khai. Ghi chú tay
+          # của con người thuộc lane người sửa và phải nằm trong file .md — không phải .json/.txt.
+          cmp_orphan=0
+          for f in "$cmp_dir"/*.json "$cmp_dir"/*.txt; do
+            [ -e "$f" ] || continue
+            bn=$(basename "$f")
+            case " ${cmp_manifest} " in
+              *" ${bn}="*) ;;
+              *) echo "::error::${cmp_dir}/${bn} là file SỐ LIỆU không có trong cmp_manifest — một bằng chứng không truy vết được. Lane người sửa dành cho .md; số liệu máy đo phải do scripts/publish-atlas.sh chở sang."
+                 cmp_orphan=$((cmp_orphan+1)) ;;
+            esac
+          done
+          if [ "$cmp_orphan" -gt 0 ]; then exit 1; fi
+          echo "✅ khớp COMPARE (lane máy sinh): ${cmp_seen}/${cmp_files} file đúng md5 bằng chứng ở 9Link, không file số liệu mồ côi"
+
+          # KHAI BÁO PHẦN BỎ QUA — in ra danh sách ĐỌC TỪ ĐĨA, không đọc từ tem. Tem chỉ là ảnh chụp lúc
+          # xuất bản; người ta sẽ thêm file vào lane người sửa SAU đó, và việc bỏ qua phải áp cho cả
+          # những file chưa tồn tại lúc con tem được ghi. Chênh lệch giữa hai danh sách là ℹ️, không
+          # phải lỗi: nó chính là dấu hiệu lane người sửa đang được dùng đúng mục đích.
+          cmp_human_now=""
+          for f in "$cmp_dir"/*; do
+            [ -e "$f" ] || continue
+            bn=$(basename "$f")
+            case " ${cmp_manifest} " in *" ${bn}="*) continue ;; esac
+            cmp_human_now="${cmp_human_now}${bn} "
+          done
+          cmp_human_now="${cmp_human_now% }"
+          echo "✅ BỎ QUA (có chủ đích): ${cmp_human_now:-<không có file nào>} trong ${cmp_dir}/ — lane NGƯỜI SỬA, không có trong cmp_manifest ⇒ không kiểm md5, không báo lệch, và scripts/publish-atlas.sh không bao giờ ghi đè."
+          if [ "${cmp_human_stamp:-}" != "${cmp_human_now}" ]; then
+            echo "ℹ️  lane người sửa đã đổi so với lúc xuất bản (tem: '${cmp_human_stamp:-<rỗng>}' · trên đĩa: '${cmp_human_now:-<rỗng>}'). Đây là tin TỐT, không phải lỗi: nghĩa là có người đã vào cập nhật khác biệt giữa các repo."
+          fi
+          # ── vế RIÊNG TƯ, trên TOÀN BỘ cây công khai chứ không chỉ trên compare/ ─────────────────
+          # Lược MỘT artefact không lược được phần DISCLOSURE. Đã đo được thật ở repo nguồn: bản thân
+          # câu văn giải thích "log thô chứa đường dẫn thư mục nhà của người chạy bộ đo" — khi viết ra
+          # NGUYÊN VĂN đường dẫn đó — lại trở thành một chỗ công bố đường dẫn cá nhân, và nó chỉ lộ ra
+          # khi quét cả cây chứ không quét mỗi thư mục bằng chứng.
+          #
+          # ⚠ MẪU GREP ĐƯỢC VIẾT ĐỂ KHÔNG TỰ KHỚP CHÍNH NÓ, và đây không phải trang trí. Repo nguồn đã
+          #   trả giá cho đúng lỗi này một lần ("bộ đo grep mã sản phẩm rồi tự phát hiện chính nó"): một
+          #   mẫu viết nguyên văn đường dẫn cấm sẽ khớp CHÍNH dòng khai báo mẫu trong file này, nên bước
+          #   này ĐỎ VĨNH VIỄN kể từ ngày nó được thêm — và một cổng đỏ vĩnh viễn thì bị bỏ qua, tới lúc
+          #   nó đỏ vì thật cũng không ai nghe. Chữ cái đầu mỗi thành phần được viết hoa-thường xen kẽ
+          #   (`(U|u)sers`) để chuỗi mẫu không chứa chuỗi mà chính nó đi tìm. Đã kiểm cả hai chiều: mẫu
+          #   này KHÔNG khớp chính nó, và bắt được 3/3 dạng đường dẫn thật.
+          leak_re='/(U|u)sers/|/(H|h)ome/|/(R|r)oot/|/(private/)?[Vv]ar/folders/|[A-Za-z]:[\\/][Uu]sers[\\/]'
+          nfiles=$(find . -path ./.git -prune -o -type f -print | wc -l | tr -d ' ')
+          leak=$(grep -rlIE "$leak_re" . --exclude-dir=.git 2>/dev/null || true)
+          if [ -n "$leak" ]; then
+            echo "::error::đường dẫn máy cá nhân trong cây CÔNG KHAI: $(printf '%s' "$leak" | tr '\n' ' ')."
+            echo "  Thứ vào lịch sử git công khai thì ở đó VĨNH VIỄN — xoá file ở commit sau không xoá được nó khỏi lịch sử."
+            exit 1
+          fi
+          # Số đếm DƯƠNG đi kèm: "0 phát hiện trên 0 file" và "0 phát hiện trên 16 file" là hai phán
+          # đoán khác nhau, và chỉ một trong hai là tin được.
+          echo "✅ khớp RIÊNG TƯ: 0 đường dẫn máy cá nhân trên ${nfiles} file của cây công khai"
+
           grep -o '"source_sha"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed 's/^/  nguồn: /'
           grep -o '"published_at"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed 's/^/  /'
 
@@ -203,7 +305,29 @@ jobs:
           wp_file=$(grep -o '"wp_file"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"wp_file"[[:space:]]*:[[:space:]]*"//; s/"$//')
           cp "$wp_file" _site/
           cmp "$wp_file" "_site/$wp_file"
-          ls -la _site _site/c4
+          # Bằng chứng so sánh 9 repo cũng phải có URL ổn định trên Pages, để một con số trong trang
+          # Atlas trỏ được tới thứ mà nó đo:
+          #   https://khanhlegood3.github.io/9link-atlas/compare/survey.json
+          # CHỈ lane MÁY SINH được chở vào artifact. Lane người sửa (`compare/DIFFERENCES.md`) cố tình
+          # KHÔNG lên Pages: nó là tài liệu làm việc của con người, đọc trên GitHub cùng mọi ghi chú
+          # khác trong repo, và đưa nó ra một URL công khai thứ hai là tạo thêm một bản sao của cùng
+          # một nội dung mà không cổng nào canh. Tên file đọc từ cmp_manifest, không gõ cứng ở đây.
+          art_dir=$(grep -o '"cmp_dir"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"cmp_dir"[[:space:]]*:[[:space:]]*"//; s/"$//')
+          art_manifest=$(grep -o '"cmp_manifest"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"cmp_manifest"[[:space:]]*:[[:space:]]*"//; s/"$//')
+          mkdir -p "_site/${art_dir}"
+          art_n=0
+          for pair in $art_manifest; do
+            n="${pair%%=*}"
+            cp "${art_dir}/${n}" "_site/${art_dir}/${n}"
+            cmp "${art_dir}/${n}" "_site/${art_dir}/${n}"
+            art_n=$((art_n+1))
+          done
+          if [ "$art_n" -lt 1 ]; then
+            echo "::error::cmp_manifest rỗng ⇒ không có bằng chứng máy nào được chở lên Pages."
+            exit 1
+          fi
+          echo "✅ đã chở ${art_n} file lane MÁY SINH vào _site/${art_dir}/ (lane người sửa KHÔNG lên Pages, có chủ đích)"
+          ls -la _site _site/c4 "_site/${art_dir}"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -237,7 +361,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Tải bản đã đăng và so lại md5 (trang + một file C4 + white paper)
+      - name: Tải bản đã đăng và so lại md5 (trang + một file C4 + white paper + bằng chứng compare)
         env:
           PAGE_URL: ${{ needs.deploy.outputs.page_url }}
         run: |
@@ -267,6 +391,19 @@ jobs:
           wp_name=$(grep -o '"wp_file"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"wp_file"[[:space:]]*:[[:space:]]*"//; s/"$//' || true)
           if [ -z "${wp_want_verify:-}" ] || [ -z "${wp_name:-}" ]; then
             echo "::error::không rút được wp_md5/wp_file từ SOURCE.json — phép đọc và định dạng đã lệch nhau."
+            exit 1
+          fi
+          # Bằng chứng so sánh 9 repo. Tên file và md5 đều ĐỌC TỪ TEM (cặp ĐẦU của cmp_manifest), không
+          # gõ cứng "survey.json" ở đây: một cái tên chép tay đặt cạnh một cái tên do máy ghi là một bản
+          # sao sẽ trôi, đúng cái lỗi đã sinh ra bẫy `c4_files` ở trên.
+          cmp_dir_verify=$(grep -o '"cmp_dir"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"cmp_dir"[[:space:]]*:[[:space:]]*"//; s/"$//' || true)
+          cmp_first=$(grep -o '"cmp_manifest"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json \
+                        | sed -E 's/^"cmp_manifest"[[:space:]]*:[[:space:]]*"//; s/"$//' \
+                        | awk '{print $1}' || true)
+          cmp_name="${cmp_first%%=*}"
+          cmp_want_verify="${cmp_first##*=}"
+          if [ -z "${cmp_dir_verify:-}" ] || [ "$cmp_name" = "$cmp_first" ] || [ -z "${cmp_want_verify:-}" ]; then
+            echo "::error::không rút được cặp đầu của cmp_manifest từ SOURCE.json — phép đọc và định dạng đã lệch nhau."
             exit 1
           fi
           # Một hàm, hai đích: định nghĩa "đã xác minh" chỉ có MỘT, áp cho cả trang lẫn file C4.
@@ -308,10 +445,18 @@ jobs:
           if ! check_url "${base}${wp_name}" "$wp_want_verify" "WHITEPAPER.md"; then
             if [ "$code" = "200" ]; then fail_hard=yes; else unverifiable=yes; fi
           fi
+          # Đích thứ tư. Lý do nó cần một phép kiểm RIÊNG chứ không được gộp vào lập luận "artifact
+          # upload nguyên khối" ở trên: nó là payload duy nhất mà TRANG phụ thuộc về mặt SỐ LIỆU.
+          # Trang Atlas in các con số đo từ `survey.json`; nếu artifact lên Pages mà thiếu file này thì
+          # cả ba md5 kia vẫn khớp, và một người đọc muốn tự kiểm con số sẽ gặp 404.
+          if ! check_url "${base}${cmp_dir_verify}/${cmp_name}" "$cmp_want_verify" "${cmp_dir_verify}/${cmp_name}"; then
+            if [ "$code" = "200" ]; then fail_hard=yes; else unverifiable=yes; fi
+          fi
           if [ "$fail_hard" = "yes" ]; then
             echo "::error::Một đích LỆCH bản trong repo sau ${TRIES} lần thử / ~$((TRIES*WAIT)) s mỗi đích."
             echo "  SOURCE.json.page_md5 : ${want}"
             echo "  c4/README.md kỳ vọng : ${c4_want}"
+            echo "  ${cmp_dir_verify}/${cmp_name} kỳ vọng : ${cmp_want_verify}"
             exit 1
           fi
           if [ "$unverifiable" = "yes" ]; then

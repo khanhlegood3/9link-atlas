@@ -1,0 +1,1224 @@
+{
+  "owner": "khanhlegood3",
+  "measured_at_utc": "2026-11-10T10:38:36Z",
+  "method": "docs/so-sanh-cac-repo.md §2 · scripts/repo-measure.mjs · scripts/survey-9repo.sh",
+  "repos": [
+    {
+      "repo": "9Link",
+      "sha": "da6f7d11029576888cea9945d14b52c64a210d4d",
+      "commit_90d": 470,
+      "api": {
+        "archived": false,
+        "created_at": "2026-09-09T20:43:54Z",
+        "default_branch": "main",
+        "fork": true,
+        "language": "TypeScript",
+        "license_spdx": "NOASSERTION",
+        "private": true,
+        "push": true,
+        "pushed_at": "2026-11-10T10:09:24Z",
+        "size": 8929,
+        "stars": 0
+      },
+      "offline": {
+        "target": "<đường dẫn cục bộ đã lược>/9Link",
+        "shape": {
+          "apps": [
+            "web"
+          ],
+          "packages": [
+            "db",
+            "n8n-nodes-9link",
+            "sdk"
+          ],
+          "hasEe": true,
+          "hasDeploy": true,
+          "hasInfra": true,
+          "hasScripts": true,
+          "hasDocs": true,
+          "packageManager": "pnpm@9.15.0",
+          "monorepoTool": "turbo"
+        },
+        "stack": "next@15.1.6 · react@19.0.0 · prisma@6.2.1 · @prisma/client@6.2.1 · node >=20",
+        "loc": {
+          "src": 87749,
+          "srcFiles": 555,
+          "unit": 50703,
+          "unitFiles": 240,
+          "e2e": 36228,
+          "e2eFiles": 83,
+          "total": 174680,
+          "tsSrc": 72457,
+          "tsUnit": 50703,
+          "tsE2e": 36228,
+          "perExt": ".ts=137,106, .tsx=22,282, .css=7,735, .mjs=4,304, .sql=1,637, .prisma=1,578, .py=38"
+        },
+        "data": {
+          "prismaModels": 34,
+          "prismaEnums": 0,
+          "prismaMap": 34,
+          "prismaMapInProse": 1,
+          "provider": "postgresql",
+          "migrationDirs": 55,
+          "engines": "postgres + clickhouse + redis + mongo"
+        },
+        "gates": {
+          "script": "scripts/verify.sh",
+          "distinct": 47
+        },
+        "workflows": 1,
+        "http": {
+          "routes": 27,
+          "pages": 28,
+          "kind": "Next.js App Router"
+        },
+        "i18n": {
+          "dir": "apps/web/messages",
+          "count": 3,
+          "keys": 1683,
+          "equal": true,
+          "diff": "",
+          "locales": "ar · en · vi"
+        },
+        "realtime": [],
+        "docs": {
+          "c4": 7,
+          "adr": 50,
+          "md": 119,
+          "mermaidBlocks": 28,
+          "mermaidFiles": 9
+        },
+        "license": {
+          "spdx": "AGPL-3.0 · có carve-out ở đầu file",
+          "lines": 687,
+          "file": "LICENSE"
+        },
+        "openCore": {
+          "eeFiles": 50,
+          "eeLicense": "Commercial",
+          "swap": "apps/web/next.config.mjs"
+        },
+        "deploy": {
+          "list": [
+            {
+              "file": "deploy/docker-compose.yml",
+              "n": 6,
+              "services": [
+                "postgres",
+                "clickhouse",
+                "redis",
+                "init",
+                "web",
+                "worker"
+              ],
+              "extNet": [
+                "edge"
+              ],
+              "profiled": 0
+            },
+            {
+              "file": "infra/docker-compose.app.yml",
+              "n": 2,
+              "services": [
+                "web",
+                "worker"
+              ],
+              "extNet": [],
+              "profiled": 0
+            },
+            {
+              "file": "infra/docker-compose.demo.yml",
+              "n": 6,
+              "services": [
+                "postgres",
+                "clickhouse",
+                "redis",
+                "init",
+                "web",
+                "worker"
+              ],
+              "extNet": [],
+              "profiled": 0
+            },
+            {
+              "file": "infra/docker-compose.yml",
+              "n": 9,
+              "services": [
+                "postgres",
+                "clickhouse",
+                "clickhouse-uae",
+                "clickhouse-eu",
+                "postgres-uae",
+                "postgres-eu",
+                "redis",
+                "growthbook",
+                "growthbook-mongo"
+              ],
+              "extNet": [],
+              "profiled": 6
+            }
+          ],
+          "cmd": "[\"node\", \"apps/web/server.js\"]"
+        }
+      },
+      "relation": {
+        "pkg_name": "9link",
+        "overlap_paths": null,
+        "this_files": null,
+        "base_files": null,
+        "sample_paths": [],
+        "content_diff": null,
+        "not_measured_because": "chính nó — không tự so với mình"
+      }
+    },
+    {
+      "repo": "9Link-V2",
+      "sha": "c97f082a319dc0a9012bede476a265502861c63a",
+      "commit_90d": 68,
+      "api": {
+        "archived": false,
+        "created_at": "2026-09-09T20:37:30Z",
+        "default_branch": "main",
+        "fork": true,
+        "language": "TypeScript",
+        "license_spdx": null,
+        "private": true,
+        "push": true,
+        "pushed_at": "2026-11-09T05:33:49Z",
+        "size": 4971,
+        "stars": 0
+      },
+      "offline": {
+        "target": "<đường dẫn cục bộ đã lược>/9Link-V2",
+        "shape": {
+          "apps": [
+            "edge",
+            "web",
+            "worker"
+          ],
+          "packages": [
+            "db",
+            "gate",
+            "ledger",
+            "networks"
+          ],
+          "hasEe": false,
+          "hasDeploy": false,
+          "hasInfra": true,
+          "hasScripts": true,
+          "hasDocs": true,
+          "packageManager": "pnpm@9.15.0",
+          "monorepoTool": "turbo"
+        },
+        "stack": "next@16.3.4 · react@19.2.8 · prisma@7.10.0 · @prisma/client@7.10.0 · node >=22",
+        "loc": {
+          "src": 21059,
+          "srcFiles": 103,
+          "unit": 8553,
+          "unitFiles": 41,
+          "e2e": 0,
+          "e2eFiles": 0,
+          "total": 29612,
+          "tsSrc": 19487,
+          "tsUnit": 8553,
+          "tsE2e": 0,
+          "perExt": ".ts=28,011, .mjs=950, .sql=234, .prisma=194, .py=151, .css=43, .tsx=29"
+        },
+        "data": {
+          "prismaModels": 8,
+          "prismaEnums": 0,
+          "prismaMap": 8,
+          "prismaMapInProse": 0,
+          "provider": "postgresql",
+          "migrationDirs": 2,
+          "engines": "postgres + clickhouse"
+        },
+        "gates": {
+          "script": "scripts/verify.sh",
+          "distinct": 18
+        },
+        "workflows": 1,
+        "http": {
+          "routes": 6,
+          "pages": 1,
+          "kind": "Next.js App Router"
+        },
+        "i18n": null,
+        "realtime": [],
+        "docs": {
+          "c4": 0,
+          "adr": 0,
+          "md": 10,
+          "mermaidBlocks": 0,
+          "mermaidFiles": 0
+        },
+        "license": {
+          "spdx": "KHÔNG CÓ FILE",
+          "lines": 0,
+          "note": ""
+        },
+        "openCore": {
+          "eeFiles": 0,
+          "eeLicense": null,
+          "swap": null
+        },
+        "deploy": {
+          "list": [
+            {
+              "file": "infra/docker-compose.yml",
+              "n": 3,
+              "services": [
+                "postgres",
+                "clickhouse",
+                "redis"
+              ],
+              "extNet": [],
+              "profiled": 0
+            }
+          ],
+          "cmd": null
+        }
+      },
+      "relation": {
+        "pkg_name": "9link-v2",
+        "overlap_paths": 44,
+        "this_files": 206,
+        "base_files": 1084,
+        "sample_paths": [
+          ".claude/agents/architect.md",
+          ".claude/agents/doc-writer.md",
+          ".claude/agents/implementer.md",
+          ".claude/agents/reviewer.md",
+          ".claude/agents/security-reviewer.md",
+          ".claude/agents/test-runner.md",
+          ".env.example",
+          ".gitignore",
+          "AUTOPILOT.md",
+          "CHANGELOG.md",
+          "CLAUDE.md",
+          "HANDOFF.md",
+          "README.md",
+          "apps/web/app/[key]/route.ts",
+          "apps/web/app/api/auth/[...all]/route.ts"
+        ],
+        "content_diff": null
+      }
+    },
+    {
+      "repo": "9Link-V3",
+      "sha": "35a3fef0fc05b975a54c3cf7b81e8250c5f9e1f2",
+      "commit_90d": 2,
+      "api": {
+        "archived": false,
+        "created_at": "2026-09-09T11:00:39Z",
+        "default_branch": "main",
+        "fork": true,
+        "language": "PowerShell",
+        "license_spdx": null,
+        "private": true,
+        "push": true,
+        "pushed_at": "2026-11-09T06:49:01Z",
+        "size": 3876,
+        "stars": 0
+      },
+      "offline": {
+        "target": "<đường dẫn cục bộ đã lược>/9Link-V3",
+        "shape": {
+          "apps": [],
+          "packages": [],
+          "hasEe": false,
+          "hasDeploy": false,
+          "hasInfra": false,
+          "hasScripts": true,
+          "hasDocs": true,
+          "packageManager": "n/a",
+          "monorepoTool": "n/a"
+        },
+        "stack": "mermaid@11.17.2",
+        "loc": {
+          "src": 450,
+          "srcFiles": 4,
+          "unit": 207,
+          "unitFiles": 2,
+          "e2e": 0,
+          "e2eFiles": 0,
+          "total": 657,
+          "tsSrc": 31,
+          "tsUnit": 0,
+          "tsE2e": 0,
+          "perExt": ".py=408, .mjs=218, .ts=31"
+        },
+        "data": {
+          "migrationDirs": 0,
+          "engines": "n/a"
+        },
+        "gates": {
+          "script": null,
+          "distinct": 0
+        },
+        "workflows": 0,
+        "http": {
+          "routes": 0,
+          "pages": null,
+          "kind": "n/a"
+        },
+        "i18n": null,
+        "realtime": [],
+        "docs": {
+          "c4": 7,
+          "adr": 0,
+          "md": 13,
+          "mermaidBlocks": 6,
+          "mermaidFiles": 6
+        },
+        "license": {
+          "spdx": "KHÔNG CÓ FILE",
+          "lines": 0,
+          "note": ""
+        },
+        "openCore": {
+          "eeFiles": 0,
+          "eeLicense": null,
+          "swap": null
+        },
+        "deploy": {
+          "list": [],
+          "cmd": null
+        }
+      },
+      "relation": {
+        "pkg_name": null,
+        "overlap_paths": 11,
+        "this_files": 95,
+        "base_files": 1084,
+        "sample_paths": [
+          ".claude/agents/architect.md",
+          ".claude/agents/implementer.md",
+          ".gitignore",
+          "CLAUDE.md",
+          "DECISIONS.md",
+          "HANDOFF.md",
+          "docs/KICKOFF.md",
+          "docs/WHITEPAPER.md",
+          "docs/c4/04-code.md",
+          "docs/c4/README.md",
+          "scripts/loc.py"
+        ],
+        "content_diff": null
+      }
+    },
+    {
+      "repo": "9Link-new",
+      "sha": "0995bd2dcba378ae135709e5cad57f6af61f0c99",
+      "commit_90d": 6,
+      "api": {
+        "archived": false,
+        "created_at": "2026-09-10T07:49:59Z",
+        "default_branch": "main",
+        "fork": true,
+        "language": "TypeScript",
+        "license_spdx": null,
+        "private": true,
+        "push": true,
+        "pushed_at": "2026-11-09T07:53:53Z",
+        "size": 875,
+        "stars": 0
+      },
+      "offline": {
+        "target": "<đường dẫn cục bộ đã lược>/9Link-new",
+        "shape": {
+          "apps": [
+            "api",
+            "monitor",
+            "scanner",
+            "web",
+            "worker"
+          ],
+          "packages": [
+            "contracts",
+            "domain"
+          ],
+          "hasEe": false,
+          "hasDeploy": false,
+          "hasInfra": true,
+          "hasScripts": true,
+          "hasDocs": true,
+          "packageManager": "npm(lockfile)",
+          "monorepoTool": "n/a"
+        },
+        "stack": "react@19.2.8 · tailwindcss@4.2.1 · node >=24.19.0 <25",
+        "loc": {
+          "src": 33418,
+          "srcFiles": 222,
+          "unit": 8786,
+          "unitFiles": 32,
+          "e2e": 0,
+          "e2eFiles": 0,
+          "total": 42204,
+          "tsSrc": 29712,
+          "tsUnit": 8748,
+          "tsE2e": 0,
+          "perExt": ".ts=25,110, .tsx=13,350, .sql=1,395, .css=1,291, .py=773, .mjs=285"
+        },
+        "data": {
+          "migrationDirs": 0,
+          "engines": "n/a"
+        },
+        "gates": {
+          "script": null,
+          "distinct": 0
+        },
+        "workflows": 2,
+        "http": {
+          "routes": 1,
+          "pages": 2,
+          "kind": "Next.js App Router"
+        },
+        "i18n": null,
+        "realtime": [],
+        "docs": {
+          "c4": 0,
+          "adr": 0,
+          "md": 49,
+          "mermaidBlocks": 10,
+          "mermaidFiles": 8
+        },
+        "license": {
+          "spdx": "KHÔNG CÓ FILE",
+          "lines": 0,
+          "note": ""
+        },
+        "openCore": {
+          "eeFiles": 0,
+          "eeLicense": null,
+          "swap": null
+        },
+        "deploy": {
+          "list": [
+            {
+              "file": "infra/compose.yaml",
+              "n": 2,
+              "services": [
+                "postgres",
+                "redis"
+              ],
+              "extNet": [],
+              "profiled": 0
+            }
+          ],
+          "cmd": null
+        }
+      },
+      "relation": {
+        "pkg_name": "9link",
+        "overlap_paths": 10,
+        "this_files": 461,
+        "base_files": 1084,
+        "sample_paths": [
+          ".dockerignore",
+          ".env.example",
+          ".gitignore",
+          "README.md",
+          "apps/web/app/globals.css",
+          "apps/web/app/layout.tsx",
+          "apps/web/app/page.tsx",
+          "apps/web/package.json",
+          "apps/web/tsconfig.json",
+          "package.json"
+        ],
+        "content_diff": null
+      }
+    },
+    {
+      "repo": "9link-browser",
+      "sha": "976bea5d27ac668a25464a348b0c42e26b13a14d",
+      "commit_90d": 12,
+      "api": {
+        "archived": false,
+        "created_at": "2026-09-09T21:10:48Z",
+        "default_branch": "main",
+        "fork": true,
+        "language": "PowerShell",
+        "license_spdx": null,
+        "private": true,
+        "push": true,
+        "pushed_at": "2026-11-09T11:50:46Z",
+        "size": 59,
+        "stars": 0
+      },
+      "offline": {
+        "target": "<đường dẫn cục bộ đã lược>/9link-browser",
+        "shape": {
+          "apps": [],
+          "packages": [],
+          "hasEe": false,
+          "hasDeploy": false,
+          "hasInfra": false,
+          "hasScripts": true,
+          "hasDocs": true,
+          "packageManager": "n/a",
+          "monorepoTool": "n/a"
+        },
+        "stack": "n/a",
+        "loc": {
+          "src": 0,
+          "srcFiles": 0,
+          "unit": 0,
+          "unitFiles": 0,
+          "e2e": 0,
+          "e2eFiles": 0,
+          "total": 0,
+          "tsSrc": 0,
+          "tsUnit": 0,
+          "tsE2e": 0,
+          "perExt": ""
+        },
+        "data": {
+          "migrationDirs": 0,
+          "engines": "n/a"
+        },
+        "gates": {
+          "script": null,
+          "distinct": 0
+        },
+        "workflows": 0,
+        "http": {
+          "routes": 0,
+          "pages": null,
+          "kind": "n/a"
+        },
+        "i18n": null,
+        "realtime": [],
+        "docs": {
+          "c4": 0,
+          "adr": 0,
+          "md": 3,
+          "mermaidBlocks": 0,
+          "mermaidFiles": 0
+        },
+        "license": {
+          "spdx": "KHÔNG CÓ FILE",
+          "lines": 0,
+          "note": ""
+        },
+        "openCore": {
+          "eeFiles": 0,
+          "eeLicense": null,
+          "swap": null
+        },
+        "deploy": {
+          "list": [],
+          "cmd": null
+        }
+      },
+      "relation": {
+        "pkg_name": null,
+        "overlap_paths": 4,
+        "this_files": 11,
+        "base_files": 1084,
+        "sample_paths": [
+          ".gitignore",
+          "CLAUDE.md",
+          "DECISIONS.md",
+          "docs/KICKOFF.md"
+        ],
+        "content_diff": null
+      }
+    },
+    {
+      "repo": "9do",
+      "sha": "4dbc2ffa1edca221c84a31a4142dc013303ebd66",
+      "commit_90d": 3,
+      "api": {
+        "archived": false,
+        "created_at": "2026-09-09T20:51:30Z",
+        "default_branch": "master",
+        "fork": true,
+        "language": null,
+        "license_spdx": null,
+        "private": true,
+        "push": true,
+        "pushed_at": "2026-09-07T13:35:01Z",
+        "size": 7170,
+        "stars": 0
+      },
+      "offline": {
+        "target": "<đường dẫn cục bộ đã lược>/9do",
+        "shape": {
+          "apps": [
+            "admin",
+            "api",
+            "business",
+            "web"
+          ],
+          "packages": [
+            "shared",
+            "ui"
+          ],
+          "hasEe": false,
+          "hasDeploy": true,
+          "hasInfra": true,
+          "hasScripts": false,
+          "hasDocs": true,
+          "packageManager": "pnpm@9.0.0",
+          "monorepoTool": "n/a"
+        },
+        "stack": "next@14.2.5 · react@18.3.1 · prisma@5.14.0 · @prisma/client@5.14.0 · tailwindcss@3.4.6 · node >=20",
+        "loc": {
+          "src": 53751,
+          "srcFiles": 430,
+          "unit": 2659,
+          "unitFiles": 37,
+          "e2e": 0,
+          "e2eFiles": 0,
+          "total": 56410,
+          "tsSrc": 50667,
+          "tsUnit": 2659,
+          "tsE2e": 0,
+          "perExt": ".ts=29,781, .tsx=23,545, .sql=1,455, .prisma=1,189, .css=362, .js=69, .mjs=9"
+        },
+        "data": {
+          "prismaModels": 73,
+          "prismaEnums": 0,
+          "prismaMap": 73,
+          "prismaMapInProse": 0,
+          "provider": "postgresql",
+          "migrationDirs": 19,
+          "engines": "postgres + redis + minio"
+        },
+        "gates": {
+          "script": null,
+          "distinct": 0
+        },
+        "workflows": 2,
+        "http": {
+          "routes": 0,
+          "pages": 67,
+          "kind": "Next.js App Router"
+        },
+        "i18n": null,
+        "realtime": [
+          "apps/api/src/common/interceptors/response.interceptor.ts",
+          "apps/web/lib/hooks.ts"
+        ],
+        "docs": {
+          "c4": 0,
+          "adr": 0,
+          "md": 5,
+          "mermaidBlocks": 0,
+          "mermaidFiles": 0
+        },
+        "license": {
+          "spdx": "KHÔNG CÓ FILE",
+          "lines": 0,
+          "note": ""
+        },
+        "openCore": {
+          "eeFiles": 0,
+          "eeLicense": null,
+          "swap": null
+        },
+        "deploy": {
+          "list": [
+            {
+              "file": "deploy/docker-compose.yml",
+              "n": 7,
+              "services": [
+                "postgres",
+                "redis",
+                "migrate",
+                "api",
+                "web",
+                "business",
+                "admin"
+              ],
+              "extNet": [
+                "edge"
+              ],
+              "profiled": 0
+            },
+            {
+              "file": "docker-compose.demo.yml",
+              "n": 7,
+              "services": [
+                "postgres",
+                "redis",
+                "migrate",
+                "api",
+                "web",
+                "business",
+                "admin"
+              ],
+              "extNet": [],
+              "profiled": 0
+            },
+            {
+              "file": "docker-compose.prod.yml",
+              "n": 5,
+              "services": [
+                "postgres",
+                "redis",
+                "migrate",
+                "api",
+                "worker"
+              ],
+              "extNet": [],
+              "profiled": 0
+            },
+            {
+              "file": "docker-compose.test.yml",
+              "n": 1,
+              "services": [
+                "postgres-test"
+              ],
+              "extNet": [],
+              "profiled": 0
+            },
+            {
+              "file": "docker-compose.yml",
+              "n": 4,
+              "services": [
+                "postgres",
+                "redis",
+                "minio",
+                "mailhog"
+              ],
+              "extNet": [],
+              "profiled": 0
+            }
+          ],
+          "cmd": "[\"npm\", \"run\", \"start\"]"
+        }
+      },
+      "relation": {
+        "pkg_name": "9do-v2",
+        "overlap_paths": 20,
+        "this_files": 596,
+        "base_files": 1084,
+        "sample_paths": [
+          ".dockerignore",
+          ".env.example",
+          ".gitignore",
+          "DECISIONS.md",
+          "HANDOFF.md",
+          "README.md",
+          "apps/web/Dockerfile",
+          "apps/web/app/globals.css",
+          "apps/web/app/icon.svg",
+          "apps/web/app/layout.tsx",
+          "apps/web/app/page.tsx",
+          "apps/web/lib/i18n/config.ts",
+          "apps/web/next.config.mjs",
+          "apps/web/package.json",
+          "apps/web/tsconfig.json"
+        ],
+        "content_diff": null
+      }
+    },
+    {
+      "repo": "olacity",
+      "sha": "b18d49d3966c0a3bd8ca7c4556452abecde73b2a",
+      "commit_90d": 38,
+      "api": {
+        "archived": false,
+        "created_at": "2026-09-09T20:41:36Z",
+        "default_branch": "master",
+        "fork": true,
+        "language": "TypeScript",
+        "license_spdx": null,
+        "private": true,
+        "push": true,
+        "pushed_at": "2026-11-09T14:06:36Z",
+        "size": 2899,
+        "stars": 0
+      },
+      "offline": {
+        "target": "<đường dẫn cục bộ đã lược>/olacity",
+        "shape": {
+          "apps": [
+            "admin",
+            "api",
+            "business",
+            "web"
+          ],
+          "packages": [
+            "shared",
+            "ui"
+          ],
+          "hasEe": false,
+          "hasDeploy": true,
+          "hasInfra": true,
+          "hasScripts": false,
+          "hasDocs": true,
+          "packageManager": "pnpm@9.0.0",
+          "monorepoTool": "n/a"
+        },
+        "stack": "next@14.2.35 · react@18.3.1 · prisma@5.14.0 · @prisma/client@5.14.0 · tailwindcss@3.4.6 · node >=20",
+        "loc": {
+          "src": 52361,
+          "srcFiles": 420,
+          "unit": 2316,
+          "unitFiles": 35,
+          "e2e": 0,
+          "e2eFiles": 0,
+          "total": 54677,
+          "tsSrc": 49488,
+          "tsUnit": 2316,
+          "tsE2e": 0,
+          "perExt": ".ts=28,546, .tsx=23,258, .sql=1,357, .prisma=1,099, .css=339, .js=69, .mjs=9"
+        },
+        "data": {
+          "prismaModels": 69,
+          "prismaEnums": 0,
+          "prismaMap": 69,
+          "prismaMapInProse": 0,
+          "provider": "postgresql",
+          "migrationDirs": 16,
+          "engines": "postgres + redis + minio"
+        },
+        "gates": {
+          "script": null,
+          "distinct": 0
+        },
+        "workflows": 2,
+        "http": {
+          "routes": 0,
+          "pages": 68,
+          "kind": "Next.js App Router"
+        },
+        "i18n": null,
+        "realtime": [
+          "apps/api/src/common/interceptors/response.interceptor.ts",
+          "apps/web/lib/hooks.ts"
+        ],
+        "docs": {
+          "c4": 0,
+          "adr": 0,
+          "md": 6,
+          "mermaidBlocks": 0,
+          "mermaidFiles": 0
+        },
+        "license": {
+          "spdx": "KHÔNG CÓ FILE",
+          "lines": 0,
+          "note": ""
+        },
+        "openCore": {
+          "eeFiles": 0,
+          "eeLicense": null,
+          "swap": null
+        },
+        "deploy": {
+          "list": [
+            {
+              "file": "deploy/docker-compose.yml",
+              "n": 7,
+              "services": [
+                "postgres",
+                "redis",
+                "migrate",
+                "api",
+                "web",
+                "business",
+                "admin"
+              ],
+              "extNet": [
+                "edge"
+              ],
+              "profiled": 0
+            },
+            {
+              "file": "docker-compose.demo.yml",
+              "n": 7,
+              "services": [
+                "postgres",
+                "redis",
+                "migrate",
+                "api",
+                "web",
+                "business",
+                "admin"
+              ],
+              "extNet": [],
+              "profiled": 0
+            },
+            {
+              "file": "docker-compose.prod.yml",
+              "n": 5,
+              "services": [
+                "postgres",
+                "redis",
+                "migrate",
+                "api",
+                "worker"
+              ],
+              "extNet": [],
+              "profiled": 0
+            },
+            {
+              "file": "docker-compose.test.yml",
+              "n": 1,
+              "services": [
+                "postgres-test"
+              ],
+              "extNet": [],
+              "profiled": 0
+            },
+            {
+              "file": "docker-compose.yml",
+              "n": 4,
+              "services": [
+                "postgres",
+                "redis",
+                "minio",
+                "mailhog"
+              ],
+              "extNet": [],
+              "profiled": 0
+            }
+          ],
+          "cmd": "[\"npm\", \"run\", \"start\"]"
+        }
+      },
+      "relation": {
+        "pkg_name": "olacity-v2",
+        "overlap_paths": 20,
+        "this_files": 582,
+        "base_files": 1084,
+        "sample_paths": [
+          ".dockerignore",
+          ".env.example",
+          ".gitignore",
+          "DECISIONS.md",
+          "HANDOFF.md",
+          "README.md",
+          "apps/web/Dockerfile",
+          "apps/web/app/globals.css",
+          "apps/web/app/layout.tsx",
+          "apps/web/app/page.tsx",
+          "apps/web/lib/i18n/config.ts",
+          "apps/web/next.config.mjs",
+          "apps/web/package.json",
+          "apps/web/tsconfig.json",
+          "deploy/deploy.json"
+        ],
+        "content_diff": null
+      }
+    },
+    {
+      "repo": "olacity-v1",
+      "sha": "f0ebec7551423c0f1e33fb673416909b58b9c275",
+      "commit_90d": 0,
+      "api": {
+        "archived": false,
+        "created_at": "2026-09-09T20:52:36Z",
+        "default_branch": "main",
+        "fork": true,
+        "language": null,
+        "license_spdx": null,
+        "private": true,
+        "push": true,
+        "pushed_at": "2026-09-07T13:32:01Z",
+        "size": 17,
+        "stars": 0
+      },
+      "offline": {
+        "target": "<đường dẫn cục bộ đã lược>/olacity-v1",
+        "shape": {
+          "apps": [],
+          "packages": [],
+          "hasEe": false,
+          "hasDeploy": false,
+          "hasInfra": false,
+          "hasScripts": true,
+          "hasDocs": true,
+          "packageManager": "n/a",
+          "monorepoTool": "n/a"
+        },
+        "stack": ".sql",
+        "loc": {
+          "src": 42,
+          "srcFiles": 1,
+          "unit": 0,
+          "unitFiles": 0,
+          "e2e": 0,
+          "e2eFiles": 0,
+          "total": 42,
+          "tsSrc": 0,
+          "tsUnit": 0,
+          "tsE2e": 0,
+          "perExt": ".sql=42"
+        },
+        "data": {
+          "migrationDirs": 0,
+          "engines": "mysql"
+        },
+        "gates": {
+          "script": null,
+          "distinct": 0
+        },
+        "workflows": 0,
+        "http": {
+          "routes": 0,
+          "pages": null,
+          "kind": "n/a"
+        },
+        "i18n": null,
+        "realtime": [],
+        "docs": {
+          "c4": 0,
+          "adr": 0,
+          "md": 1,
+          "mermaidBlocks": 0,
+          "mermaidFiles": 0
+        },
+        "license": {
+          "spdx": "KHÔNG CÓ FILE",
+          "lines": 0,
+          "note": ""
+        },
+        "openCore": {
+          "eeFiles": 0,
+          "eeLicense": null,
+          "swap": null
+        },
+        "deploy": {
+          "list": [
+            {
+              "file": "docker-compose.yml",
+              "n": 1,
+              "services": [
+                "mysql"
+              ],
+              "extNet": [
+                "olacity-mysql-data"
+              ],
+              "profiled": 0
+            }
+          ],
+          "cmd": null
+        }
+      },
+      "relation": {
+        "pkg_name": null,
+        "overlap_paths": 2,
+        "this_files": 10,
+        "base_files": 1084,
+        "sample_paths": [
+          ".gitignore",
+          "HANDOFF.md"
+        ],
+        "content_diff": null
+      }
+    },
+    {
+      "repo": "olacity-docs-web",
+      "sha": "f9448e42ce85e35dcbfe038cf1ea9c8c9953ef3c",
+      "commit_90d": 0,
+      "api": {
+        "archived": false,
+        "created_at": "2026-09-09T21:24:51Z",
+        "default_branch": "master",
+        "fork": true,
+        "language": null,
+        "license_spdx": null,
+        "private": true,
+        "push": true,
+        "pushed_at": "2026-08-10T10:13:58Z",
+        "size": 74,
+        "stars": 0
+      },
+      "offline": {
+        "target": "<đường dẫn cục bộ đã lược>/olacity-docs-web",
+        "shape": {
+          "apps": [],
+          "packages": [],
+          "hasEe": false,
+          "hasDeploy": true,
+          "hasInfra": false,
+          "hasScripts": false,
+          "hasDocs": false,
+          "packageManager": "npm(lockfile)",
+          "monorepoTool": "n/a"
+        },
+        "stack": "next@15.5.4 · react@19.1.1 · tailwindcss@4.1.13 · mermaid@11.16.0",
+        "loc": {
+          "src": 2310,
+          "srcFiles": 30,
+          "unit": 0,
+          "unitFiles": 0,
+          "e2e": 0,
+          "e2eFiles": 0,
+          "total": 2310,
+          "tsSrc": 2066,
+          "tsUnit": 0,
+          "tsE2e": 0,
+          "perExt": ".tsx=1,281, .ts=785, .css=228, .mjs=16"
+        },
+        "data": {
+          "migrationDirs": 0,
+          "engines": "n/a"
+        },
+        "gates": {
+          "script": null,
+          "distinct": 0
+        },
+        "workflows": 0,
+        "http": {
+          "routes": 0,
+          "pages": 2,
+          "kind": "Next.js App Router"
+        },
+        "i18n": null,
+        "realtime": [],
+        "docs": {
+          "c4": 0,
+          "adr": 0,
+          "md": 0,
+          "mermaidBlocks": 0,
+          "mermaidFiles": 0
+        },
+        "license": {
+          "spdx": "KHÔNG CÓ FILE",
+          "lines": 0,
+          "note": ""
+        },
+        "openCore": {
+          "eeFiles": 0,
+          "eeLicense": null,
+          "swap": null
+        },
+        "deploy": {
+          "list": [
+            {
+              "file": "deploy/docker-compose.yml",
+              "n": 1,
+              "services": [
+                "web"
+              ],
+              "extNet": [
+                "edge"
+              ],
+              "profiled": 0
+            }
+          ],
+          "cmd": "[\"node\", \"server.js\"]"
+        }
+      },
+      "relation": {
+        "pkg_name": "olacity-docs-web",
+        "overlap_paths": 5,
+        "this_files": 41,
+        "base_files": 1084,
+        "sample_paths": [
+          ".dockerignore",
+          ".gitignore",
+          "deploy/deploy.json",
+          "deploy/docker-compose.yml",
+          "package.json"
+        ],
+        "content_diff": null
+      }
+    }
+  ]
+}
