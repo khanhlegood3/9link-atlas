@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas 9Link 5W1H — white paper tương tác, đo tại 2d24b47</title>
+<meta name="description" content="9Link trình bày theo 5W1H: mọi con số là kết quả đo trên một SHA cụ thể, kèm nhãn độ tin cậy, log sửa lỗi công khai, và những phần cố ý chưa chạy.">
+<style>
+/* ══════════════════════════════════════════════════════════════════════════
+   Atlas 9Link — một file, không CDN, không font ngoài, không build step.
+   Lý do: một tài liệu dẫn nguồn bằng SHA mà lại phụ thuộc một CDN bên thứ ba
+   thì không tái lập được. Mọi thứ ở đây chạy offline.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --ink:#12161c; --ink-2:#3d4753; --ink-3:#6b7684; --line:#dfe4ea; --line-2:#eef1f5;
+  --bg:#ffffff; --bg-2:#f7f8fa; --bg-3:#f0f2f6;
+  --accent:#0f5c8c; --accent-soft:#e8f2f9;
+  --ok:#0f7b4f; --ok-soft:#e6f4ed;
+  --warn:#9a6206; --warn-soft:#fdf3e0;
+  --bad:#a3232b; --bad-soft:#fbeaec;
+  --model:#5b3fa8; --model-soft:#efeaf9;
+  --na:#5c6672; --na-soft:#eef0f3;
+  --radius:10px; --maxw:1080px;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+}
+[data-theme="dark"]{
+  --ink:#e8ecf1; --ink-2:#b6c0cc; --ink-3:#8a95a3; --line:#2b333d; --line-2:#212830;
+  --bg:#11151a; --bg-2:#171c22; --bg-3:#1e242c;
+  --accent:#63b3e6; --accent-soft:#16262f;
+  --ok:#5ec98f; --ok-soft:#14251c;
+  --warn:#e0aa52; --warn-soft:#2a2114;
+  --bad:#ef8a90; --bad-soft:#2c1719;
+  --model:#b39ddb; --model-soft:#211c2e;
+  --na:#98a3b0; --na-soft:#1e242c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:104px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.68;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+a:hover{border-bottom-color:currentColor}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+h1,h2,h3,h4{line-height:1.28;font-weight:700;letter-spacing:-.015em}
+h2{font-size:1.62rem;margin:2.6em 0 .5em}
+h3{font-size:1.16rem;margin:2em 0 .45em}
+p{margin:.7em 0}
+code,kbd{font-family:var(--mono);font-size:.875em;background:var(--bg-3);
+  padding:.13em .38em;border-radius:4px;color:var(--ink)}
+pre{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:.83rem;line-height:1.6}
+pre code{background:none;padding:0}
+hr{border:0;border-top:1px solid var(--line);margin:3em 0}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+.small{font-size:.855rem;color:var(--ink-3)}
+
+/* ── thanh tiến trình đọc + điều hướng dính ── */
+#prog{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:60;transition:width .08s linear}
+#bar{position:fixed;top:3px;left:0;right:0;z-index:55;background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:blur(9px);border-bottom:1px solid var(--line)}
+#bar .in{max-width:var(--maxw);margin:0 auto;padding:9px 22px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#bar .brand{font-weight:700;font-size:.9rem;letter-spacing:-.01em;white-space:nowrap}
+#bar nav{display:flex;gap:3px;flex-wrap:wrap;flex:1}
+#bar nav a{font-size:.795rem;padding:3px 9px;border-radius:99px;color:var(--ink-2);border:0}
+#bar nav a:hover{background:var(--bg-3);color:var(--ink)}
+#bar nav a[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.tbtn{font:inherit;font-size:.78rem;padding:4px 11px;border-radius:99px;border:1px solid var(--line);
+  background:var(--bg);color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── đầu trang ── */
+header.hero{padding:112px 0 26px;border-bottom:1px solid var(--line);background:
+  radial-gradient(120% 100% at 12% 0%,var(--accent-soft) 0%,transparent 58%),var(--bg)}
+.hero h1{font-size:clamp(2.1rem,5.4vw,3.35rem);margin:0 0 .18em;letter-spacing:-.03em}
+.hero .sub{font-size:1.07rem;color:var(--ink-2);max-width:64ch;margin:.2em 0 1.1em}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
+.chip{font-size:.755rem;font-family:var(--mono);padding:3px 10px;border-radius:99px;
+  background:var(--bg-2);border:1px solid var(--line);color:var(--ink-2)}
+
+/* ── nhãn độ tin cậy: linh hồn của tài liệu này ── */
+.tag{display:inline-block;font-size:.685rem;font-weight:700;letter-spacing:.045em;text-transform:uppercase;
+  padding:2px 8px;border-radius:5px;vertical-align:middle;white-space:nowrap}
+.t-meas{background:var(--ok-soft);color:var(--ok)}
+.t-writ{background:var(--warn-soft);color:var(--warn)}
+.t-model{background:var(--model-soft);color:var(--model)}
+.t-na{background:var(--na-soft);color:var(--na)}
+.legend{display:grid;gap:9px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  margin:18px 0;padding:16px 18px;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius)}
+.legend div{font-size:.845rem;color:var(--ink-2)}
+.legend b{display:block;color:var(--ink);font-size:.875rem;margin-bottom:1px}
+
+/* ── thẻ 5W1H ── */
+.qgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));margin:22px 0}
+.qcard{display:block;padding:17px 18px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--bg);color:var(--ink);border-bottom:1px solid var(--line);transition:.14s}
+.qcard:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-2px)}
+.qcard .w{font-size:.7rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.qcard .t{font-weight:650;font-size:1.01rem;margin:5px 0 3px;line-height:1.35}
+.qcard .d{font-size:.845rem;color:var(--ink-3);line-height:1.5}
+
+/* ── khối tóm tắt điều hành ── */
+.exec{counter-reset:e;margin:20px 0;padding:0;list-style:none}
+.exec>li{counter-increment:e;position:relative;padding:15px 18px 15px 58px;border:1px solid var(--line);
+  border-radius:var(--radius);margin-bottom:9px;background:var(--bg)}
+.exec>li::before{content:counter(e);position:absolute;left:16px;top:15px;width:28px;height:28px;
+  border-radius:8px;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:.9rem;
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+.exec>li p{margin:.2em 0}
+.jump{font-size:.815rem;font-weight:600;white-space:nowrap}
+
+/* ── mục lục ── */
+.toc{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));margin:20px 0}
+.toc section{border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;background:var(--bg-2)}
+.toc h4{margin:0 0 9px;font-size:.775rem;letter-spacing:.11em;text-transform:uppercase;color:var(--accent)}
+.toc ol{margin:0;padding-left:20px;font-size:.885rem}
+.toc li{margin:5px 0;color:var(--ink-2)}
+.toc li a{color:var(--ink-2);border:0}
+.toc li a:hover{color:var(--accent)}
+
+/* ── phần / chương ── */
+.part{margin-top:64px;padding-top:22px;border-top:2px solid var(--ink)}
+.part>.kicker{font-size:.735rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3)}
+.part>h2{margin:.15em 0 .3em;font-size:1.85rem}
+.chapter{margin-top:44px;scroll-margin-top:104px}
+.chapter>h3{font-size:1.3rem;margin-bottom:.2em}
+
+/* ── bảng ── */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);margin:16px 0}
+table{border-collapse:collapse;width:100%;font-size:.875rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line-2);vertical-align:top}
+th{background:var(--bg-2);font-size:.755rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);
+  position:sticky;top:0;z-index:1}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--bg-2)}
+td.v{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+th[data-sort]{cursor:pointer;user-select:none}
+th[data-sort]:hover{color:var(--accent)}
+th[data-sort]::after{content:"↕";margin-left:5px;opacity:.4;font-size:.85em}
+th[aria-sort="ascending"]::after{content:"↑";opacity:1}
+th[aria-sort="descending"]::after{content:"↓";opacity:1}
+.blank{color:var(--na);font-style:italic}
+
+/* ── bộ lọc ── */
+.filters{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:14px 0 0}
+.filters .lb{font-size:.79rem;color:var(--ink-3);margin-right:2px}
+.fchip{font:inherit;font-size:.775rem;padding:4px 11px;border-radius:99px;border:1px solid var(--line);
+  background:var(--bg);color:var(--ink-2);cursor:pointer}
+.fchip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+[data-theme="dark"] .fchip[aria-pressed="true"]{color:#0d1117}
+
+/* ── thẻ số liệu ── */
+.stats{display:grid;gap:11px;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));margin:18px 0}
+.stat{border:1px solid var(--line);border-radius:var(--radius);padding:13px 15px;background:var(--bg-2)}
+.stat .n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:1.5rem;font-weight:700;
+  letter-spacing:-.02em;line-height:1.15}
+.stat .l{font-size:.795rem;color:var(--ink-3);margin-top:3px;line-height:1.4}
+
+/* ── callout ── */
+.call{border-left:3px solid var(--accent);background:var(--accent-soft);padding:13px 17px;
+  border-radius:0 var(--radius) var(--radius) 0;margin:18px 0;font-size:.925rem}
+.call.warn{border-color:var(--warn);background:var(--warn-soft)}
+.call.bad{border-color:var(--bad);background:var(--bad-soft)}
+.call.ok{border-color:var(--ok);background:var(--ok-soft)}
+.call .h{font-weight:700;display:block;margin-bottom:3px}
+
+/* ── thanh so sánh (chart tự vẽ, không thư viện) ── */
+.bars{margin:16px 0;display:grid;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(112px,168px) 1fr auto;gap:11px;align-items:center;font-size:.845rem}
+.bar .track{height:19px;background:var(--bg-3);border-radius:5px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:5px;transition:width .5s cubic-bezier(.2,.7,.3,1)}
+.bar .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.815rem;color:var(--ink-2);white-space:nowrap}
+.bar.t2 .fill{background:var(--model)}
+.bar.t3 .fill{background:var(--warn)}
+
+/* ── thanh trượt mô hình ── */
+.sim{border:1px solid var(--line);border-radius:var(--radius);padding:18px;background:var(--bg-2);margin:18px 0}
+.sim .row{display:grid;grid-template-columns:minmax(190px,1fr) minmax(150px,2.1fr) 84px;gap:13px;
+  align-items:center;margin:11px 0}
+.sim label{font-size:.875rem;font-weight:600}
+.sim label small{display:block;font-weight:400;color:var(--ink-3);font-size:.775rem;line-height:1.4}
+.sim input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+.sim .out{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;text-align:right;font-size:.95rem}
+.simout{display:grid;gap:11px;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+  margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.simout div{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+.simout .n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:1.28rem;font-weight:700}
+.simout .l{font-size:.775rem;color:var(--ink-3);margin-top:2px}
+
+/* ── quiz ── */
+.quiz{margin:18px 0}
+.qq{border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;margin-bottom:11px;background:var(--bg)}
+.qq .qt{font-weight:650;margin-bottom:9px}
+.qq .opts{display:grid;gap:6px}
+.qq button{font:inherit;font-size:.875rem;text-align:left;padding:8px 12px;border-radius:7px;
+  border:1px solid var(--line);background:var(--bg-2);color:var(--ink);cursor:pointer}
+.qq button:hover:not(:disabled){border-color:var(--accent)}
+.qq button:disabled{cursor:default;opacity:.85}
+.qq button.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:600}
+.qq button.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.qq .why{margin-top:9px;font-size:.845rem;color:var(--ink-2);padding:9px 12px;background:var(--bg-2);
+  border-radius:7px;border-left:2px solid var(--accent);display:none}
+.qq .why.show{display:block}
+#qscore{font-weight:700;font-size:1.02rem;margin:14px 0;padding:13px 16px;border-radius:var(--radius);
+  background:var(--bg-2);border:1px solid var(--line)}
+
+/* ── dòng thời gian ── */
+.tl{margin:18px 0;padding-left:24px;border-left:2px solid var(--line)}
+.tl .ev{position:relative;padding:0 0 17px 16px}
+.tl .ev::before{content:"";position:absolute;left:-31px;top:6px;width:11px;height:11px;border-radius:50%;
+  background:var(--bg);border:2.5px solid var(--accent)}
+.tl .ev.na::before{border-color:var(--na)}
+.tl .d{font-family:var(--mono);font-size:.775rem;color:var(--ink-3);letter-spacing:.02em}
+.tl .t{font-weight:650;font-size:.945rem}
+.tl .x{font-size:.855rem;color:var(--ink-2)}
+
+/* ── log sửa lỗi ── */
+.fix{border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:0 var(--radius) var(--radius) 0;
+  padding:14px 17px;margin-bottom:11px;background:var(--bg)}
+.fix .wrong{font-size:.9rem;color:var(--bad);margin:2px 0}
+.fix .right{font-size:.9rem;color:var(--ok);margin:2px 0}
+.fix .cause{font-size:.855rem;color:var(--ink-2);margin-top:7px}
+.fix .cause b{color:var(--ink)}
+.srcline{font-family:var(--mono);font-size:.775rem;color:var(--ink-3);margin-top:7px;word-break:break-word}
+
+footer{margin-top:70px;padding:30px 0 50px;border-top:1px solid var(--line);background:var(--bg-2);
+  font-size:.855rem;color:var(--ink-2)}
+.a11y{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media(max-width:640px){
+  body{font-size:15.3px}
+  .sim .row{grid-template-columns:1fr;gap:5px}
+  .sim .out{text-align:left}
+  .bar{grid-template-columns:1fr;gap:4px}
+  .bar .val{text-align:right}
+  #bar nav{display:none}
+}
+@media print{#bar,#prog,.tbtn,.filters{display:none}.chapter{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+<div id="prog" aria-hidden="true"></div>
+
+<div id="bar">
+  <div class="in">
+    <span class="brand">Atlas 9Link</span>
+    <nav id="pnav" aria-label="Các phần">
+      <a href="#part-1">I · Nền tảng</a>
+      <a href="#part-2">II · Đã đo</a>
+      <a href="#part-3">III · Giới hạn</a>
+      <a href="#part-4">IV · Độ tin cậy</a>
+      <a href="#part-5">V · Việc còn lại</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#defs">Định nghĩa</a>
+    </nav>
+    <button class="tbtn" id="theme" aria-label="Đổi nền sáng/tối">Nền tối</button>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>Atlas 9Link <span style="color:var(--accent)">5W1H</span></h1>
+    <p class="sub">Một đường link, chín khả năng, một lớp dữ liệu sự kiện. Tài liệu này trình bày
+      <code>docs/WHITEPAPER.md</code> theo sáu câu hỏi What · Who · When · Where · Why · How —
+      và <b>không thêm một khẳng định nào mà white paper chưa nói</b>. Phần mới duy nhất là
+      <b>cách trình bày</b> và <b>bốn nhãn độ tin cậy</b> gắn lên từng con số.</p>
+    <div class="chips">
+      <span class="chip">đo tại SHA 2d24b47</span>
+      <span class="chip">2026-11-09</span>
+      <span class="chip">white paper v1 · 1.176 dòng</span>
+      <span class="chip">AGPL-3.0 + ee/ thương mại</span>
+      <span class="chip">private · fork · TypeScript</span>
+      <span class="chip">438 commit / 90 ngày</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ═══════════════════ CÓ GÌ MỚI ═══════════════════ -->
+<section id="whatsnew" style="margin-top:38px">
+<h2 style="margin-top:0">Có gì mới</h2>
+
+<h3>v1.0 — bản Atlas đầu tiên</h3>
+<p>Đây là <b>lớp trình bày</b>, không phải một white paper mới. Mọi khẳng định đều truy về
+<code>docs/WHITEPAPER.md</code> (1.176 dòng, tiếng Việt) hoặc về một phép đo chạy được. Những gì
+bản này thêm vào:</p>
+<ul>
+  <li><b>Bốn nhãn độ tin cậy</b> gắn lên từng con số — xem ngay bên dưới. Lý do: white paper có
+    nhiều phần <i>inert theo thiết kế</i>, và một tài liệu mô tả chúng như đang chạy là một tài
+    liệu nói dối bằng cách im lặng.</li>
+  <li><b>Bảng 18 chiều đã đo</b>, lọc và sắp xếp được, mỗi chiều một định nghĩa và một lệnh tái lập.</li>
+  <li><b>Ba chỗ white paper tự khai lệch số đo</b> — trong đó <b>một chỗ cả hai đều đúng</b>, và
+    một chỗ chưa giải thích được. Ghi ở <a href="#drift">chương Lệch</a>, không giấu ở phụ lục.</li>
+  <li><b>Mô hình kinh tế cổng quảng cáo có thanh trượt</b> — nhưng gắn nhãn <span class="tag t-model">Mô hình</span>
+    vì <code>ad_rate_cards</code> trên production có <b>0 hàng</b>: chưa có một đồng nào chảy thật.</li>
+  <li><b>Quiz 12 câu</b> về các bất biến, và <b>log sửa lỗi công khai</b>.</li>
+</ul>
+
+<div class="call warn"><span class="h">Điều quan trọng nhất trước khi đọc tiếp</span>
+Chuỗi tiền quảng cáo hiện <b>inert trên production theo thiết kế</b>: bảng giá có <b>0 hàng</b>
+⇒ <code>currentRates() == null</code> ⇒ cổng kiếm tiền <b>không tự bật</b> cho link mới và
+<b>không một dòng sổ nào</b> được sinh ra. Đây không phải nợ kỹ thuật — đó là chiều fail đúng:
+<i>thiếu cấu hình thì không hứa tiền với ai</i>. Nhưng nó cũng có nghĩa <b>chưa có bằng chứng
+thực địa</b> về doanh thu trên mỗi lượt. Nguồn: white paper §1, §7.5, §12.1.</div>
+
+<h3>Nhãn độ tin cậy — bốn mức, và vì sao cần tới bốn</h3>
+<div class="legend">
+  <div><b><span class="tag t-meas">Đã đo</span></b> Chạy được bằng một lệnh trong repo, trên một
+    SHA cụ thể, hôm nay. Ví dụ: <span class="num">85.998</span> dòng nguồn.</div>
+  <div><b><span class="tag t-writ">Đã viết, chưa chạy</span></b> Cơ chế có trong mã và có cổng gác,
+    nhưng chưa từng chạy thật trên production. Ví dụ: chuỗi kết sổ quảng cáo.</div>
+  <div><b><span class="tag t-model">Mô hình</span></b> Con số do người đọc tạo ra bằng thanh trượt.
+    Không phải dự báo, không phải cam kết. Ví dụ: doanh thu trên mỗi nghìn lượt.</div>
+  <div><b><span class="tag t-na">Chưa đo được</span></b> Muốn đo nhưng thiếu quyền hoặc thiếu dữ
+    liệu. Ô để <b>trống có chủ ý</b>, kèm lý do — không điền bằng suy đoán.</div>
+</div>
+<p class="small">Một nhãn hai mức (đúng/sai) sẽ buộc phải gọi "cơ chế đã cài nhưng chưa từng chạy"
+là <i>đúng</i> — và đó chính xác là chỗ một đối tác enterprise bị thuyết phục nhầm. Nhãn
+<span class="tag t-writ">Đã viết, chưa chạy</span> tồn tại chỉ để không phải nói dối bằng cách chọn
+từ nhẹ hơn.</p>
+</section>
+
+<!-- ═══════════════════ 5W1H ═══════════════════ -->
+<section id="questions">
+<h2>Chọn một câu hỏi để bắt đầu</h2>
+<div class="qgrid">
+  <a class="qcard" href="#what"><span class="w">What</span>
+    <span class="t">9Link là gì, và không là gì</span>
+    <span class="d">Một Link · chín khả năng · một lớp Event. Không phải một trình rút gọn link có thêm tính năng.</span></a>
+  <a class="qcard" href="#who"><span class="w">Who</span>
+    <span class="t">Ai xây, ai dùng, ai trả tiền</span>
+    <span class="d">Core AGPL-3.0 · <code>ee/</code> 50 file thương mại · advertiser trả tiền, chủ link được chia.</span></a>
+  <a class="qcard" href="#when"><span class="w">When</span>
+    <span class="t">45 mốc, 438 commit trong 90 ngày</span>
+    <span class="d">Từ M0 tới M45 · repo tạo 2026-09-09 · pivot mô hình kinh doanh 2026-08-25.</span></a>
+  <a class="qcard" href="#where"><span class="w">Where</span>
+    <span class="t">Chín trụ trên cùng một URL, ba ngôn ngữ</span>
+    <span class="d">27 route · 28 page · 1.683 khoá i18n × 3 locale bằng nhau · wedge MENA/RTL.</span></a>
+  <a class="qcard" href="#why"><span class="w">Why</span>
+    <span class="t">Vì sao moat là lớp dữ liệu, không phải tính năng</span>
+    <span class="d">Bốn loại chạm sinh cùng một <code>Event</code>. Một chồng công cụ rời không làm được về mặt cấu trúc.</span></a>
+  <a class="qcard" href="#how"><span class="w">How</span>
+    <span class="t">Bốn mặt phẳng và một đường nóng</span>
+    <span class="d">Edge → Core → Data → Money. <code>events</code> append-only ở ClickHouse, kết sổ về Postgres.</span></a>
+</div>
+</section>
+
+<!-- ═══════════════════ TÓM TẮT ĐIỀU HÀNH ═══════════════════ -->
+<section id="exec">
+<h2>Tám điều cần biết về 9Link</h2>
+<p class="small">Mỗi điều kèm nhãn độ tin cậy và một liên kết tới chương chi tiết. Con số
+<span class="tag t-meas">Đã đo</span> là của cây <code>2d24b47</code>, ngày 2026-11-09.</p>
+<ol class="exec">
+  <li><p><b>Luận điểm cạnh tranh là lớp dữ liệu, không phải danh sách tính năng.</b> QR (trụ 2),
+    deep link (trụ 3), lượt xem bio (trụ 4) và lượt hiển thị quảng cáo (trụ 7) <b>đều sinh cùng một
+    loại <code>Event</code></b>, đổ về cùng một bảng trong ClickHouse. Đó là điều kiện để attribution
+    liền mạch xuyên điểm chạm — thứ một chồng năm công cụ rời không làm được <i>về mặt cấu trúc</i>.
+    Bất biến này có cổng máy gác: cấm tạo data-store song song.
+    <span class="tag t-meas">Đã đo</span> <span class="num">34</span> model Prisma ·
+    <span class="num">0</span> enum · engine <code>postgres + clickhouse + redis + mongo</code>.
+    <a class="jump" href="#why">→ Vì sao</a></p></li>
+
+  <li><p><b>Cloud miễn phí và không giới hạn; tiền đến từ chính lưu lượng.</b> Từ pivot 2026-08-25,
+    9Link <b>không bán dung lượng</b>. Số link, custom domain, bio page, analytics, lưu lượng — tất cả
+    không giới hạn. Nguồn thu là quảng cáo trên cổng của link (9Link <b>là</b> mạng quảng cáo), chia
+    lại cho chủ link, giữ phần chênh; cộng take-rate trên GMV affiliate; cộng giấy phép <code>/ee</code>.
+    Lợi ích nền tảng và người dùng thẳng hàng theo <b>cùng một con số</b>: lưu lượng thật.
+    <span class="tag t-writ">Đã viết, chưa chạy</span> <a class="jump" href="#money">→ Kinh tế cổng</a></p></li>
+
+  <li><p><b>Chuỗi tiền đang inert trên production — và đó là thiết kế.</b>
+    <code>ad_rate_cards</code> = <span class="num">0</span> hàng · <code>ad_earnings</code> =
+    <span class="num">0</span> dòng · <code>ad_creatives</code> = <span class="num">0</span> ·
+    <code>ad_network_revenue</code> chưa có báo cáo thật nên <b>mọi ngày = <code>insufficient</code></b>.
+    Cơ chế đã lên, <b>chưa từng chạy thật một lần nào</b>. Cảnh báo ngay trên màn hình
+    <code>/govern/rates</code>: <i>"cấp CPM = nhận nghĩa vụ trả tiền"</i>.
+    <span class="tag t-writ">Đã viết, chưa chạy</span> <a class="jump" href="#notdone">→ Chưa làm</a></p></li>
+
+  <li><p><b>Chủ quyền dữ liệu là điểm bán, không phải tính năng phụ.</b> RTL/Arabic hạng nhất,
+    WhatsApp routing, và data residency <b>ba mức</b> (nhãn vùng → Event theo cụm → PII/Postgres theo
+    cụm) với luật <b>fail-closed</b>: không phân giải được vùng thì <b>từ chối ghi</b>, không bao giờ
+    rơi về cụm mặc định. <span class="tag t-meas">Đã đo</span> i18n
+    <span class="num">1.683</span> khoá × 3 locale <code>[ar · en · vi]</code> — <b>bằng nhau chính xác</b>.
+    <a class="jump" href="#sovereign">→ Chủ quyền</a></p></li>
+
+  <li><p><b>Quy mô đã đo, kèm ba phạm vi khác nhau.</b>
+    <span class="num">85.998</span> dòng nguồn / 552 file (mọi phần mở rộng) ·
+    <span class="num">50.703</span> dòng unit-test / 240 file · <span class="num">36.228</span> dòng e2e /
+    83 file · tổng <span class="num">172.929</span>. Chỉ tính <code>.ts/.tsx</code>: src
+    <span class="num">72.457</span>, nên "phi-test" = <span class="num">108.685</span> — white paper khai
+    ~108.700, <b>lệch 15 dòng (0,014%)</b>. <span class="tag t-meas">Đã đo</span>
+    <a class="jump" href="#loc">→ Ba phạm vi</a></p></li>
+
+  <li><p><b>Hai tỉ lệ test/mã, cả hai đều đúng.</b> White paper khai <span class="num">≈0,47</span>;
+    bộ đo cho ra <span class="num">0,59</span>. Không ai sai: <span class="num">50.703 ÷ 108.685 = 0,466</span>
+    (mẫu là "phi-test" <code>.ts/.tsx</code>) và <span class="num">50.703 ÷ 85.998 = 0,590</span> (mẫu là
+    src mọi phần mở rộng). <b>Một tỉ lệ không kèm định nghĩa mẫu số là một con số vô nghĩa.</b>
+    <span class="tag t-meas">Đã đo</span> <a class="jump" href="#drift">→ Lệch</a></p></li>
+
+  <li><p><b>47 cổng máy, nhưng 0 file CI.</b> <span class="num">47</span> tên <code>GATE-*</code> phân
+    biệt do <code>scripts/verify.sh</code> gọi — và <b>0</b> file trong <code>.github/workflows/</code>
+    trên cây <code>2d24b47</code> mà trang này đo, tức mọi cổng chỉ chạy khi có người chạy. Đây là nợ
+    <b>N-1</b>, đã ghi, chưa trả. Cùng một con số "cổng" ra <span class="num">46 / 47 / 71</span> tuỳ
+    phạm vi quét. <b>Cập nhật sau khi đo:</b> repo này nay có <span class="num">1</span> file workflow —
+    <code>.github/workflows/atlas-ci.yml</code> — chạy cổng của riêng trang này trên mỗi PR và mỗi
+    push, với quyền tối thiểu <code>contents: read</code>. Nhưng <b>N-1 vẫn chưa đóng</b>: file đó chỉ
+    tự chạy <b>nửa Atlas của <code>GATE-VNDOC</code></b>, còn <code>verify.sh</code> vẫn chưa được nối
+    vào cái gì tự chạy. Con số <span class="num">0</span> ở trên vẫn đúng cho cây của nó; không ghi
+    được SHA của chính commit thêm workflow vì một file không thể chứa SHA của commit sẽ sinh ra nó.
+    <span class="tag t-meas">Đã đo</span> <a class="jump" href="#gates">→ Cổng kiểm</a></p></li>
+
+  <li><p><b>Bảng so sánh 9 repo mới viết được 1/9.</b> Tám repo còn lại trong hệ sinh thái trả
+    <b>403</b> cho token của phiên làm việc — chúng <i>tồn tại</i>, chỉ nằm ngoài phạm vi. Ô để
+    <b>trống có chủ ý</b>, kèm lý do và lệnh kiểm tra trong 20 giây. Không điền bằng suy đoán.
+    <span class="tag t-na">Chưa đo được</span> <a class="jump" href="#ecosystem">→ Hệ sinh thái</a></p></li>
+</ol>
+</section>
+
+<!-- ═══════════════════ MỤC LỤC ═══════════════════ -->
+<section id="toc">
+<h2>Mục lục</h2>
+<div class="toc">
+  <section><h4>I · Nền tảng</h4><ol>
+    <li><a href="#what">9Link là gì, và không là gì</a></li>
+    <li><a href="#when">45 mốc và độ sống thật</a></li>
+    <li><a href="#who">Ai xây, ai dùng, ai trả tiền</a></li>
+    <li><a href="#how">Bốn mặt phẳng và một đường nóng</a></li>
+    <li><a href="#where">Chín trụ trên cùng một URL</a></li>
+    <li><a href="#why">Vì sao moat là lớp dữ liệu</a></li>
+  </ol></section>
+  <section><h4>II · Thực trạng đã đo</h4><ol>
+    <li><a href="#dims">Bảng 18 chiều — lọc và sắp xếp được</a></li>
+    <li><a href="#loc">LOC và ba phạm vi phần mở rộng</a></li>
+    <li><a href="#drift">Ba chỗ tự khai lệch số đo</a></li>
+    <li><a href="#gates">Cổng kiểm: 46, 47 và 71</a></li>
+    <li><a href="#deploy">Hình dạng triển khai</a></li>
+    <li><a href="#absent">Những gì cố ý không có</a></li>
+  </ol></section>
+  <section><h4>III · Động lực và giới hạn</h4><ol>
+    <li><a href="#money">Kinh tế cổng quảng cáo — có thanh trượt</a></li>
+    <li><a href="#opencore">Open-core: seam là ràng buộc pháp lý</a></li>
+    <li><a href="#sovereign">Chủ quyền dữ liệu và fail-closed</a></li>
+    <li><a href="#abuse">Chống lạm dụng là rủi ro tồn vong</a></li>
+    <li><a href="#risk">Ma trận rủi ro</a></li>
+  </ol></section>
+  <section><h4>IV · Độ tin cậy</h4><ol>
+    <li><a href="#notdone">Những gì chưa làm — nói thẳng</a></li>
+    <li><a href="#human">12 việc chỉ con người quyết được</a></li>
+    <li><a href="#breakers">Ba cầu dao đang tắt</a></li>
+    <li><a href="#corrections">Log sửa lỗi công khai</a></li>
+    <li><a href="#evidence">Bằng chứng kỹ thuật</a></li>
+  </ol></section>
+  <section><h4>V · Hệ sinh thái và việc còn lại</h4><ol>
+    <li><a href="#ecosystem">9 repo: 1 đã đo, 8 để trống</a></li>
+    <li><a href="#laws">Sáu luật điền một bảng so sánh</a></li>
+    <li><a href="#debts">Nợ đã ghi, chưa trả</a></li>
+    <li><a href="#next">Việc còn lại, theo thứ tự</a></li>
+  </ol></section>
+  <section><h4>Kiểm tra và tái lập</h4><ol>
+    <li><a href="#quiz">Quiz 12 câu về các bất biến</a></li>
+    <li><a href="#defs">Định nghĩa 18 chiều + lệnh tái lập</a></li>
+    <li><a href="#sources">Nguồn và giới hạn của tài liệu này</a></li>
+  </ol></section>
+</div>
+</section>
+
+<!-- ═══════════════════ PHẦN I ═══════════════════ -->
+<div class="part" id="part-1">
+  <div class="kicker">Phần I</div>
+  <h2>Nền tảng — sáu câu hỏi, sáu câu trả lời có nguồn</h2>
+  <p>Phần này gần như không thêm gì: nó <b>sắp xếp lại</b> white paper theo 5W1H để một người đọc
+  lần đầu tìm được câu trả lời cho đúng câu họ đang hỏi.</p>
+</div>
+
+<section class="chapter" id="what">
+<h3>1 · What — 9Link là gì, và không là gì</h3>
+<p><b>9Link là một nền tảng nguồn mở hợp nhất trọn vòng đời của một đường link</b> — tạo, làm giàu,
+định tuyến, phân phối, đo lường, tối ưu, kiếm tiền, quản trị, tích hợp — trên <b>một URL thương hiệu
+duy nhất</b> và <b>một lớp dữ liệu sự kiện duy nhất</b>.</p>
+<p>Nó thay thế một chồng năm công cụ rời mà mọi đội marketing đang trả tiền và đang ghép tay:</p>
+<pre><code>Bitly   +   Branch    +  một QR tool  +  GA4/UTM       +  Linktree
+(short)     (deeplink)   (QR động)      (attribution)     (bio)</code></pre>
+
+<h4>Không là gì</h4>
+<ul>
+  <li><b>Không phải một trình rút gọn link có thêm tính năng.</b> Rút gọn là trụ 1 trong chín trụ;
+    tám trụ còn lại không phải phần mở rộng của nó mà là các mặt cắt khác nhau của <b>cùng một lớp
+    Event</b>.</li>
+  <li><b>Không phải một SaaS bán dung lượng.</b> Sau pivot 2026-08-25, số link và lưu lượng không
+    giới hạn. Bán dung lượng sẽ đặt lợi ích nền tảng <i>ngược</i> với lợi ích người dùng.</li>
+  <li><b>Không chạy serverless.</b> <span class="tag t-meas">Đã đo</span>
+    <span class="num">0</span> file <code>vercel.json</code> / <code>.vercel</code>; chuỗi
+    <code>vercel</code> trong mã sản phẩm chỉ có ở 4 file và cả bốn là <b>danh sách chặn SSRF</b> —
+    Vercel là một <i>đích</i> mà 9Link quản trị, không phải nơi 9Link chạy.
+    <code>apps/web/Dockerfile</code> kết bằng <code>CMD ["node","apps/web/server.js"]</code>.</li>
+  <li><b>Không phải một hệ đang kiếm tiền.</b> Xem điều 3 ở tóm tắt điều hành.</li>
+</ul>
+
+<div class="call"><span class="h">Hai bất biến, có cổng máy gác</span>
+<b>① Một Link, chín khả năng</b> — mọi khả năng là một mặt cắt của cùng một Link, không phải một
+thực thể song song. <b>② Một lớp dữ liệu</b> — cấm tạo data-store song song. Bất biến ② là thứ
+biến luận điểm "moat là lớp dữ liệu" từ một câu marketing thành một ràng buộc <i>kiểm được bằng máy</i>.</div>
+</section>
+
+<section class="chapter" id="when">
+<h3>2 · When — 45 mốc, và độ sống đo bằng commit chứ không bằng sao</h3>
+<div class="stats">
+  <div class="stat"><div class="n">45</div><div class="l">mốc đã đóng, M0 → M45 <span class="tag t-writ">Đã viết</span></div></div>
+  <div class="stat"><div class="n">438</div><div class="l">commit trong 90 ngày <span class="tag t-meas">Đã đo</span></div></div>
+  <div class="stat"><div class="n">9/9</div><div class="l">trụ sống <span class="tag t-writ">Đã viết</span></div></div>
+  <div class="stat"><div class="n">50</div><div class="l">ADR trong <code>docs/adr/</code> <span class="tag t-meas">Đã đo</span></div></div>
+  <div class="stat"><div class="n">0</div><div class="l">sao — repo private <span class="tag t-meas">Đã đo</span></div></div>
+</div>
+<p><b>Định nghĩa độ sống ở đây là số commit trong 90 ngày, không phải số sao.</b> Lý do: một repo
+công khai có thể có hàng chục nghìn sao và <b>0</b> commit trong 90 ngày (trong chính khảo sát hệ
+sinh thái của repo này, <code>MetaGPT</code> có 71.215 sao và 0 commit/90 ngày — nên ADR 0048 đã
+<i>bác</i> việc dùng nó làm topology). Sao là di sản của một quyết định cũ; commit là quyết định
+đang diễn ra.</p>
+<div class="tl">
+  <div class="ev"><div class="d">2026-08-25</div><div class="t">Pivot mô hình kinh doanh (M36)</div>
+    <div class="x">Kiếm tiền thành <b>mặc định</b>, tám trụ miễn phí. Bỏ bán dung lượng. Nguồn thu
+    chuyển sang quảng cáo trên chính link của người dùng, chia lại cho họ.</div></div>
+  <div class="ev"><div class="d">2026-09-09</div><div class="t">Repo <code>9Link</code> được tạo</div>
+    <div class="x"><span class="tag t-meas">Đã đo</span> qua GitHub API. Là một <b>fork</b>
+    (<code>fork=true</code>), ngôn ngữ chính TypeScript, nhánh mặc định <code>main</code>.</div></div>
+  <div class="ev"><div class="d">2026-11-08</div><div class="t">Kiến trúc runtime dài hạn được chốt</div>
+    <div class="x">ADR 0050: <b>giữ</b> self-host, không di trú sang Vercel; AgentWorks joins compose
+    stack; luật AW-9 về mặt mạng.</div></div>
+  <div class="ev"><div class="d">2026-11-09</div><div class="t">Bộ đo và cổng tài liệu vào repo</div>
+    <div class="x"><code>repo-measure.mjs</code> (18 chiều) · <code>loc.py</code> · <code>check-vn-docs.mjs</code>
+    (= <code>GATE-VNDOC</code>) · <code>survey-9repo.sh</code> (vòng ngoài 9 repo). Cổng đếm
+    <b>46 → 47</b>.</div></div>
+  <div class="ev na"><div class="d">chưa xảy ra</div><div class="t">Lượt kết sổ quảng cáo đầu tiên</div>
+    <div class="x"><span class="tag t-na">Chưa đo được</span> Cần một con người cấp CPM và
+    <code>AD_NETWORK_9LINK_TAG</code>. Trước lúc đó, mọi con số doanh thu trong tài liệu này là
+    <b>mô hình</b>, không phải kết quả.</div></div>
+</div>
+</section>
+
+<section class="chapter" id="who">
+<h3>3 · Who — ai xây, ai dùng, ai trả tiền</h3>
+<div class="tw"><table>
+<thead><tr><th>Vai</th><th>Ai</th><th>Trả / nhận</th><th>Nhãn</th></tr></thead>
+<tbody>
+<tr><td><b>Xây Core</b></td><td>Mã nguồn mở, AGPL-3.0, self-host được bằng <code>docker compose</code></td>
+  <td>—</td><td><span class="tag t-meas">Đã đo</span></td></tr>
+<tr><td><b>Xây <code>/ee</code></b></td><td><span class="num">50</span> file, <code>ee/LICENSE</code> = Commercial</td>
+  <td>Giấy phép doanh nghiệp</td><td><span class="tag t-meas">Đã đo</span></td></tr>
+<tr><td><b>Chủ link</b></td><td>Người dùng Cloud hoặc người tự dựng</td>
+  <td><b>Nhận</b> phần chia từ quảng cáo trên link của mình</td><td><span class="tag t-writ">Đã viết, chưa chạy</span></td></tr>
+<tr><td><b>Advertiser</b></td><td>9Link <b>tự làm mạng</b> (bán trực tiếp), không chỉ cắm mạng ngoài</td>
+  <td><b>Trả</b> theo CPM</td><td><span class="tag t-writ">Đã viết, chưa chạy</span></td></tr>
+<tr><td><b>Operator instance</b></td><td>Cấp bảng giá từ <code>/govern/rates</code></td>
+  <td>Giữ phần chênh</td><td><span class="tag t-writ">Đã viết, chưa chạy</span></td></tr>
+<tr><td><b>Người xem link</b></td><td>Khán giả cuối</td>
+  <td>Trả bằng <b>sự chú ý</b>, qua một cổng có thể tắt</td><td><span class="tag t-writ">Đã viết, chưa chạy</span></td></tr>
+</tbody></table></div>
+<p><b>Ranh giới open-core không phải thẩm mỹ, nó là ràng buộc pháp lý.</b>
+<span class="tag t-meas">Đã đo</span> <code>LICENSE</code> dài 687 dòng là AGPL-3.0, và
+<b>dòng 21–22</b> nói rõ thư mục <code>ee/</code> <i>không</i> được bảo hộ bởi AGPL — thương mại
+theo <code>ee/LICENSE</code> riêng. Dòng 1 của file không nói gì về điều này, nên ai chỉ đọc tiêu đề
+sẽ hiểu sai phạm vi.</p>
+<p>Cơ chế chuyển chế độ cũng đã đo: <code>apps/web/next.config.mjs</code> đổi
+<code>@/lib/ee-entry</code> thành <code>ee/entry.ts</code> <b>nếu file đó tồn tại trên đĩa</b> —
+không phải một biến môi trường. Nghĩa là ranh giới OSS/doanh nghiệp được quyết bởi <i>sự có mặt của
+một file</i>, điều làm cho nó kiểm được bằng <code>ls</code> thay vì bằng cách đọc cấu hình runtime.</p>
+</section>
+
+<section class="chapter" id="how">
+<h3>4 · How — bốn mặt phẳng và một đường nóng</h3>
+<p>Đường nóng là <code>apps/web/app/[key]/route.ts</code>: <span class="num">387</span> dòng,
+<code>force-dynamic</code>, hash-pinned, đi qua <b>8 lớp guard</b>. Mọi lượt phục vụ link đi qua đúng
+một chỗ đó — đó là lý do một quyết định sai ở đó có bán kính bằng toàn bộ sản phẩm.</p>
+<div class="bars" aria-label="Số lượng theo mặt phẳng dữ liệu">
+  <div class="bar"><span>Data — model Prisma</span><span class="track"><span class="fill" style="width:61.8%"></span></span><span class="val">34</span></div>
+  <div class="bar"><span>Data — migration</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">55</span></div>
+  <div class="bar t2"><span>HTTP — <code>page.tsx</code></span><span class="track"><span class="fill" style="width:50.9%"></span></span><span class="val">28</span></div>
+  <div class="bar t2"><span>HTTP — <code>route.ts</code></span><span class="track"><span class="fill" style="width:49.1%"></span></span><span class="val">27</span></div>
+  <div class="bar t3"><span>Compose — <code>infra/</code></span><span class="track"><span class="fill" style="width:16.4%"></span></span><span class="val">9</span></div>
+  <div class="bar t3"><span>Compose — <code>deploy/</code></span><span class="track"><span class="fill" style="width:10.9%"></span></span><span class="val">6</span></div>
+</div>
+<p class="small">Biểu đồ tự vẽ, không thư viện. Số liệu <span class="tag t-meas">Đã đo</span> tại
+<code>2d24b47</code>. Chiều rộng tỉ lệ với giá trị; giá trị chính xác ở cột phải — không phải ở độ dài thanh.</p>
+
+<h4>Dòng tiền đi như thế nào</h4>
+<pre><code>ClickHouse <code>events</code>  (append-only, impression.value = 0)
+        │  job kết sổ chạy trong worker của CORE
+        ▼
+đọc <code>/ee</code> AdNetwork.rates()   ← Core KHÔNG import /ee
+        ▼
+Postgres <code>ad_earnings</code>  (khoá tự nhiên 5 cột, sourceWorkspaceId NOT NULL,
+                          không có linkId, largest-remainder — ADR 0034)
+        ▼
+CAS payout claim  <b>theo rowcount, không bao giờ theo số dư</b>
+        ▼
+<code>payout_requests</code>  (tối đa 1 yêu cầu mở / workspace)
+        ▼
+step-up ≤ 900 giây → ops duyệt → chuyển tiền <b>ngoài hệ thống</b></code></pre>
+<p>Hai quyết định ở đây đáng giá với bất kỳ ai sẽ vận hành hệ:</p>
+<ul>
+  <li><b><code>impression.value = 0</code> ở tầng append-only.</b> Lượt hiển thị được ghi <i>trước</i>
+    khi biết nó đáng giá bao nhiêu. Gán giá trị lúc ghi sẽ khoá cứng một bảng giá vào dữ liệu lịch sử.</li>
+  <li><b>Claim bằng rowcount, không bằng số dư.</b> Đọc số dư rồi ghi là một cuộc đua; một lệnh
+    <code>UPDATE … WHERE</code> trả về <i>số dòng đã đổi</i> thì không. Sai ở đây là trả tiền hai lần.</li>
+</ul>
+<div class="call warn"><span class="h">Nhịp tim của job — ba luật, đọc từ mã</span>
+Từ <code>apps/web/lib/ops/job-beat-judge.ts</code>: <b>①</b> beat theo <i>chu kỳ vòng lặp</i>, không
+theo hoàn tất task — một job chạy 40 phút vẫn phải đập. <b>②</b> <code>beatAt === null</code> thì trả
+<code>ok</code> kèm "chưa có nghĩa vụ", <b>không phải</b> <code>down</code> — nhờ vậy một bản self-host
+không bật profile thì readiness vẫn xanh miễn phí. <b>③</b> trần tuổi nhịp lấy qua env và <b>phải
+kẹp</b> — một biến môi trường vô lý không được phép làm cả hệ báo động.
+<span class="tag t-meas">Đã đo</span> <code>schema.prisma:403</code>: thêm một job mới là
+<b>một hàng, không cần migration</b> (tên job là khoá chính).</div>
+</section>
+
+<section class="chapter" id="where">
+<h3>5 · Where — chín trụ trên cùng một URL</h3>
+<div class="tw"><table id="pillars">
+<thead><tr><th>#</th><th>Trụ</th><th>Động từ</th><th>Lõi</th><th>Lớp lộ trình</th></tr></thead>
+<tbody>
+<tr><td class="v">1</td><td><b>Create</b></td><td><code>/create</code></td><td>short/branded link, custom domain (verify DNS thật), bulk JSON/CSV, REST API</td><td><b>Land</b></td></tr>
+<tr><td class="v">2</td><td><b>Enrich</b></td><td><code>/enrich</code></td><td>QR động <b>có brand</b> (đổi đích không đổi QR), UTM builder, OG preview, deep link</td><td><b>Land</b></td></tr>
+<tr><td class="v">3</td><td><b>Route</b></td><td><code>/route</code></td><td>geo/device/ngôn ngữ/giờ, A/B split sticky, deferred deep link, <b>WhatsApp routing</b></td><td><b>Land</b></td></tr>
+<tr><td class="v">4</td><td><b>Publish</b></td><td><code>/publish</code></td><td>link-in-bio <b>native trên chính Link</b>, block system, theme, RTL per-page</td><td>Expand</td></tr>
+<tr><td class="v">5</td><td><b>Measure</b></td><td><code>/measure</code></td><td>analytics real-time, conversion, attribution, campaign rollup, retargeting pixel</td><td><b>Land</b></td></tr>
+<tr><td class="v">6</td><td><b>Optimize</b></td><td><code>/optimize</code></td><td>A/B significance (z-test 2 tỉ lệ), declare-winner, funnel, gợi ý AI BYO</td><td>Platform</td></tr>
+<tr><td class="v">7</td><td><b>Monetize</b></td><td><code>/monetize</code></td><td>cổng quảng cáo · affiliate auto-tag · tip/checkout · ví · chi trả</td><td>Expand</td></tr>
+<tr><td class="v">8</td><td><b>Govern</b></td><td><code>/govern</code></td><td>password/expiry/click-limit, chống phishing, RBAC, SSO, audit, <b>data residency</b></td><td><b>Land</b></td></tr>
+<tr><td class="v">9</td><td><b>Connect</b></td><td><code>/connect</code></td><td>REST API, OpenAPI 3.1, SDK, node n8n, webhook OUT ký HMAC</td><td>Expand</td></tr>
+</tbody></table></div>
+<p><b>Luật hai tầng tên.</b> Tên trụ + route (<code>Create</code>/<code>/create</code>) là
+<i>canonical</i>, giữ nguyên trong code, API, OpenAPI tag và docs kỹ thuật. Nhưng UI hiển thị tên thân
+thiện theo locale — nguồn <code>common.nav.*</code> trong <code>messages/{vi,en,ar}.json</code> (vi:
+"Rút gọn link", en: "Short links"). Lý do: người dùng không nghĩ theo động từ kiến trúc, họ nghĩ theo
+việc họ đang làm.</p>
+<p><b>Đa ngôn ngữ và RTL là P0, không phải bản địa hoá về sau.</b>
+<span class="tag t-meas">Đã đo</span> <span class="num">1.683</span> khoá lá × 3 locale
+<code>[ar · en · vi]</code>, và ba locale <b>bằng nhau chính xác</b> — không locale nào thiếu khoá.
+Đây là một phép đo có ý nghĩa: i18n "làm sau" thường cho ra ba file lệch nhau vài trăm khoá, và
+Arabic là file lệch nhiều nhất vì nó được thêm cuối.</p>
+</section>
+
+<section class="chapter" id="why">
+<h3>6 · Why — vì sao người ta đặt cược vào lớp dữ liệu</h3>
+<p>Câu hỏi thật không phải "chín trụ có nhiều tính năng hơn năm công cụ rời không" — gần như chắc
+chắn là không, từng công cụ chuyên biệt sẽ tốt hơn ở việc của nó. Câu hỏi là: <b>có thứ gì chỉ tồn
+tại khi chín trụ dùng chung một lớp Event không?</b> Có, và đó là attribution xuyên điểm chạm.</p>
+<p>Một QR (trụ 2), một deep link (trụ 3), một lượt xem bio (trụ 4) và một lượt hiển thị quảng cáo
+(trụ 7) là <b>bốn loại chạm khác nhau của cùng một người trên cùng một chiến dịch</b>. Nếu bốn loại
+đó nằm trong bốn hệ của bốn nhà cung cấp, việc nối chúng lại là một bài toán đối soát <i>không bao
+giờ khép</i> — khác định danh, khác múi giờ, khác cửa sổ quy kết, khác cách đếm unique. Nếu cả bốn
+là <b>cùng một hàng trong cùng một bảng</b>, nó là một câu truy vấn.</p>
+<div class="call ok"><span class="h">Vì sao điều này là moat chứ không phải tính năng</span>
+Một đối thủ có thể sao chép từng trụ. Họ <b>không</b> sao chép được việc cả chín trụ đã ghi vào cùng
+một bảng trong ba năm — vì dữ liệu lịch sử không di trú ngược. Và bất biến ② (cấm data-store song
+song) là thứ giữ cho lợi thế đó không bị chính đội ngũ của mình phá vỡ trong một quý bận rộn.</div>
+<p><b>Cái giá của lập luận này, nói thẳng:</b> nó chỉ có giá trị nếu có lưu lượng thật để quy kết.
+Mà lưu lượng thật thì <span class="tag t-na">Chưa đo được</span> — xem
+<a href="#breakers">ba cầu dao đang tắt</a>, cả ba đều chờ đúng một thứ là số thật để đặt ngưỡng.</p>
+</section>
+
+<!-- ═══════════════════ PHẦN II ═══════════════════ -->
+<div class="part" id="part-2">
+  <div class="kicker">Phần II</div>
+  <h2>Thực trạng đã đo — 18 chiều, mỗi chiều một định nghĩa và một lệnh</h2>
+  <p>Phần này không trích white paper. Nó là <b>kết quả chạy</b> <code>scripts/repo-measure.mjs</code>
+  trên cây <code>2d24b47</code> ngày 2026-11-09, cộng sáu chiều từ GitHub API. Một con số quy mô
+  không kèm SHA là một con số sẽ sớm sai: chỉ riêng trong ngày 9/11, src của 9Link đã đổi từ
+  <span class="num">84.992</span> sang <span class="num">85.998</span> dòng.</p>
+</div>
+
+<section class="chapter" id="dims">
+<h3>1 · Bảng 18 chiều</h3>
+<p class="small">Bấm vào tiêu đề cột để sắp xếp. Lọc theo nhãn độ tin cậy. Cột "8 repo còn lại" cố ý
+trống — xem <a href="#ecosystem">chương Hệ sinh thái</a>.</p>
+<div class="filters" role="group" aria-label="Lọc theo nhãn độ tin cậy">
+  <span class="lb">Lọc:</span>
+  <button class="fchip" data-f="all" aria-pressed="true">Tất cả (18)</button>
+  <button class="fchip" data-f="meas" aria-pressed="false">Đã đo</button>
+  <button class="fchip" data-f="writ" aria-pressed="false">Đã viết, chưa chạy</button>
+  <button class="fchip" data-f="na" aria-pressed="false">Chưa đo được</button>
+  <span class="lb" id="dcount" style="margin-left:auto"></span>
+</div>
+<div class="tw"><table id="dims-t">
+<thead><tr>
+  <th data-sort="0">Chiều</th>
+  <th data-sort="1">Kết quả trên 9Link @ 2d24b47</th>
+  <th data-sort="2">Nhãn</th>
+  <th>8 repo còn lại</th>
+</tr></thead>
+<tbody>
+<tr data-t="meas"><td><b>Ngôn ngữ / khung</b></td><td class="v">next@15.1.6 · react@19.0.0 · prisma@6.2.1 · node &gt;=20</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>Hình dạng monorepo</b></td><td class="v">apps=[web] · packages=[db, n8n-nodes-9link, sdk] · pnpm@9.15.0 + turbo</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>LOC nguồn</b> (mọi phần mở rộng)</td><td class="v">85.998 dòng / 552 file</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>LOC unit-test</b></td><td class="v">50.703 dòng / 240 file · tỉ lệ 0,59</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>LOC e2e</b></td><td class="v">36.228 dòng / 83 file</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>LOC chỉ .ts/.tsx</b></td><td class="v">src 72.457 · "phi-test" (src+e2e) 108.685</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>Data layer</b></td><td class="v">34 model · 0 enum · 34 @@map · 55 migration · postgresql</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>Engine dữ liệu</b></td><td class="v">postgres + clickhouse + redis + mongo</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>Cổng GATE-*</b></td><td class="v">47 tên phân biệt do scripts/verify.sh gọi</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>CI thật</b></td><td class="v">0 file trong .github/workflows/ trên cây 2d24b47<br>1 file (atlas-ci.yml — chỉ chạy cổng Atlas, không đăng gì) từ commit sau ⇒ nợ N-1 CHƯA đóng</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>Bề mặt HTTP</b></td><td class="v">27 route.ts · 28 page.tsx (App Router)</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>i18n</b></td><td class="v">1.683 khoá lá × 3 locale [ar · en · vi] — BẰNG NHAU</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>Real-time</b></td><td class="v">0 file mã sản phẩm dùng SSE/WebSocket</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>Tài liệu</b></td><td class="v">7 file docs/c4 · 50 ADR · 119 .md · 28 khối Mermaid / 9 file</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>License</b> (đọc thân file)</td><td class="v">AGPL-3.0, 687 dòng, carve-out ee/ ở dòng 21–22</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>Open-core</b></td><td class="v">ee/ 50 file · ee/LICENSE=Commercial · swap entry ở next.config.mjs</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>Deploy — compose</b></td><td class="v">deploy/ 6 · infra/ 9 (6 có profiles:) · app 2 · demo 6 · edge external</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+<tr data-t="meas"><td><b>Dockerfile CMD</b></td><td class="v">["node","apps/web/server.js"]</td><td><span class="tag t-meas">Đã đo</span></td><td class="blank">chưa đo được — 403</td></tr>
+</tbody></table></div>
+
+<h4>Sáu chiều phải gọi GitHub API</h4>
+<div class="tw"><table>
+<thead><tr><th>Chiều</th><th>Kết quả</th><th>Nhãn</th></tr></thead>
+<tbody>
+<tr><td><b>private</b></td><td class="v">true</td><td><span class="tag t-meas">Đã đo</span></td></tr>
+<tr><td><b>fork</b></td><td class="v">true</td><td><span class="tag t-meas">Đã đo</span></td></tr>
+<tr><td><b>archived</b></td><td class="v">false</td><td><span class="tag t-meas">Đã đo</span></td></tr>
+<tr><td><b>permissions.push</b></td><td class="v">true</td><td><span class="tag t-meas">Đã đo</span></td></tr>
+<tr><td><b>commit / 90 ngày</b></td><td class="v">438</td><td><span class="tag t-meas">Đã đo</span></td></tr>
+<tr><td><b>pushed_at</b></td><td class="v">2026-11-09T03:29:20Z</td><td><span class="tag t-meas">Đã đo</span></td></tr>
+</tbody></table></div>
+<div class="call warn"><span class="h">Một con số API không được tin</span>
+GitHub trả <code>license.spdx_id = NOASSERTION</code> cho repo này, trong khi thân file
+<code>LICENSE</code> là <b>AGPL-3.0</b> rõ ràng. Định nghĩa của chiều "License" ở đây là
+<b>đọc thân file</b>, không đọc trường API. Trong cùng khảo sát, trường đó trả
+<code>CC-BY-4.0</code> cho <code>microsoft/autogen</code> dù mã là MIT — nên đây là lỗi hệ thống của
+trường, không phải của riêng repo này.</div>
+</section>
+
+<section class="chapter" id="loc">
+<h3>2 · LOC và ba phạm vi phần mở rộng</h3>
+<p>Cùng một repo, ba câu hỏi khác nhau, ba con số khác nhau — và <b>cả ba đều đúng</b>. Điều duy
+nhất làm một con số LOC trở nên vô nghĩa là thiếu phạm vi.</p>
+<div class="tw"><table>
+<thead><tr><th>Phạm vi</th><th>src</th><th>unit-test</th><th>e2e</th><th>Tổng</th></tr></thead>
+<tbody>
+<tr><td><b>Mọi phần mở rộng nguồn</b></td><td class="v">85.998 <span class="small">(552 f)</span></td><td class="v">50.703 <span class="small">(240 f)</span></td><td class="v">36.228 <span class="small">(83 f)</span></td><td class="v">172.929</td></tr>
+<tr><td><b>Chỉ <code>.ts/.tsx</code></b></td><td class="v">72.457</td><td class="v">50.703</td><td class="v">36.228</td><td class="v">159.388</td></tr>
+<tr><td><b>"Phi-test"</b> = src + e2e, chỉ <code>.ts/.tsx</code></td><td colspan="3" class="v">đây là đại lượng white paper khai ~108.700</td><td class="v">108.685</td></tr>
+</tbody></table></div>
+<h4>Phân bố theo đuôi file</h4>
+<div class="bars" aria-label="Số dòng theo phần mở rộng file">
+  <div class="bar"><span><code>.ts</code></span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">137.106</span></div>
+  <div class="bar"><span><code>.tsx</code></span><span class="track"><span class="fill" style="width:16.3%"></span></span><span class="val">22.282</span></div>
+  <div class="bar"><span><code>.css</code></span><span class="track"><span class="fill" style="width:5.6%"></span></span><span class="val">7.735</span></div>
+  <div class="bar t2"><span><code>.mjs</code></span><span class="track"><span class="fill" style="width:1.9%"></span></span><span class="val">2.553</span></div>
+  <div class="bar t2"><span><code>.sql</code></span><span class="track"><span class="fill" style="width:1.2%"></span></span><span class="val">1.637</span></div>
+  <div class="bar t2"><span><code>.prisma</code></span><span class="track"><span class="fill" style="width:1.2%"></span></span><span class="val">1.578</span></div>
+  <div class="bar t3"><span><code>.py</code></span><span class="track"><span class="fill" style="width:0.03%"></span></span><span class="val">38</span></div>
+</div>
+<p class="small">Chú ý <code>.ts</code> là <span class="num">137.106</span> trong khi "src mọi phần mở
+rộng" chỉ <span class="num">85.998</span>: con số lớn hơn bao gồm cả unit-test và e2e, vốn cũng là
+<code>.ts</code>. Đây chính xác là loại nhầm lẫn mà việc ghi phạm vi sinh ra để chặn.</p>
+<div class="call"><span class="h">Vị từ phân loại test — đã trả giá bằng 452 dòng xếp nhầm</span>
+Một file là test khi đuôi có <code>.test.</code>/<code>.spec.</code>, <b>hoặc</b> đường dẫn chứa
+<code>/__tests__/</code>, <b>hoặc</b> đường dẫn bắt đầu bằng <code>test/</code> hay <code>tests/</code>.
+Thiếu vế thứ ba, <span class="num">452</span> dòng e2e bị xếp vào mã nguồn. Vị từ này nằm trong
+<code>scripts/loc.py</code> và <b>cấm viết lại bằng ngôn ngữ khác</b>: một vị từ khác đi một chút là
+con số nhảy nhóm, và con số nhảy nhóm thì trông vẫn hợp lý.</div>
+<p><b>Một chi tiết dễ đọc sai:</b> <code>ee/e2e/*.ts</code> là <span class="num">8</span> file /
+<span class="num">3.014</span> dòng, nhưng chúng là <b>trình điều khiển cổng</b> — chúng <i>chạy</i>
+cổng, không phải bài kiểm thử đơn vị. Đếm chúng vào "e2e" là đúng theo vị từ đường dẫn, và cần nói
+rõ khi dẫn số.</p>
+</section>
+
+<section class="chapter" id="drift">
+<h3>3 · Ba chỗ white paper tự khai lệch số đo</h3>
+<p>Đây là chương mà một tài liệu bình thường sẽ không có. Nó tồn tại vì <b>độ chênh giữa lời hứa và
+mã</b> là thứ một đối tác enterprise dùng để đánh giá nhà cung cấp — và vì hai trong ba chỗ dưới đây
+là lỗi của <i>người đo</i>, không phải của tài liệu.</p>
+
+<h4>Lệch 1 — tỉ lệ test/mã: <span class="num">0,47</span> hay <span class="num">0,59</span>? Cả hai.</h4>
+<div class="tw"><table>
+<thead><tr><th>Đại lượng</th><th>Phép tính</th><th>Kết quả</th><th>Ai khai</th></tr></thead>
+<tbody>
+<tr><td>unit-test ÷ <b>"phi-test"</b> (<code>.ts/.tsx</code> src + e2e)</td><td class="v">50.703 ÷ 108.685</td><td class="v">0,4665 ≈ 0,47</td><td>white paper §14</td></tr>
+<tr><td>unit-test ÷ <b>src mọi phần mở rộng</b></td><td class="v">50.703 ÷ 85.998</td><td class="v">0,5896 ≈ 0,59</td><td>bộ đo <code>repo-measure.mjs</code></td></tr>
+</tbody></table></div>
+<p><b>Kết luận: không có lỗi.</b> Hai mẫu số khác nhau. Nhưng nếu chỉ viết "tỉ lệ test ≈ 0,5" thì cả
+hai người đọc sẽ hiểu hai con số khác nhau và tin rằng mình đồng ý. <span class="tag t-meas">Đã đo</span></p>
+
+<h4>Lệch 2 — số ADR: white paper khai <span class="num">47</span>, đo được <span class="num">50</span></h4>
+<p><b>Kết luận: white paper đã cũ, và biết tại sao.</b> Ba ADR được thêm <i>sau</i> khi white paper
+viết: <code>0048</code> (MetaGPT làm thư viện), <code>0049</code> (chọn LangGraph.js),
+<code>0050</code> (giữ runtime dài hạn tự host). <span class="num">47 + 3 = 50</span> — khớp đúng.
+Đây là loại lệch <i>lành</i>: có nguyên nhân, kiểm được, và sửa bằng một dòng.
+<span class="tag t-meas">Đã đo</span> <code>ls docs/adr/*.md | wc -l</code> = 50.</p>
+
+<h4>Lệch 3 — số file e2e: white paper khai <span class="num">78</span>, đo được <span class="num">83</span></h4>
+<div class="call bad"><span class="h">Chưa giải thích được — và tài liệu này không bịa lý do</span>
+Chênh <span class="num">5</span> file. <code>ee/e2e/</code> có 8 file, nên <span class="num">78 + 8 = 86</span>
+≠ 83 — cách giải thích obvious nhất <b>không khớp</b>. Nghĩa là hoặc vị từ hai bên khác nhau ở một
+chỗ chưa tìm ra, hoặc white paper đếm ở một thời điểm khác. <b>Không điền một lời giải thích chưa
+kiểm chứng vào đây.</b> Việc cần làm là đối chiếu vị từ, và luật §4.2 của repo nói rõ: khi phép đo
+lệch <i>nhỏ</i> so với số tự khai, hãy <b>ngờ phép đo của mình trước</b>.
+<span class="tag t-na">Chưa đo được</span></div>
+
+<h4>Vì sao chương này quan trọng hơn ba con số trong nó</h4>
+<p>Một phép đo sai <b>trông giống hệt</b> một chênh lệch 0,4% hợp lý. Repo này đã có một lần như
+vậy: khẳng định "white paper lệch +437 dòng" được công bố, và nó <b>sai</b> — số thật là
+<span class="num">108.685</span> so với ~108.700 tự khai, tức lệch <b>15 dòng (0,014%)</b>. Hai lỗi
+định nghĩa cộng hưởng: vị từ thiếu mẫu đường dẫn <code>tests/</code>, và cộng cả phần mở rộng không
+phải <code>.ts/.tsx</code> vào một đại lượng vốn chỉ định nghĩa trên <code>.ts/.tsx</code>.
+Xem <a href="#corrections">log sửa lỗi</a>.</p>
+</section>
+
+<section class="chapter" id="gates">
+<h3>4 · Cổng kiểm: cùng một repo, "46 cổng" ra 46, 47 và 71</h3>
+<p>Đây là ví dụ sạch nhất về việc một định nghĩa quyết định một con số. Trên <b>cùng một cây</b>:</p>
+<div class="tw"><table>
+<thead><tr><th>Phạm vi quét</th><th>Kết quả</th><th>Có phải số cổng không?</th></tr></thead>
+<tbody>
+<tr><td>Tên <code>GATE-*</code> phân biệt mà <code>scripts/verify.sh</code> <b>gọi</b>, đã cắt dấu câu cuối</td><td class="v">46 trên cây 9e3455c<br>47 trên cây 2d24b47</td><td><b>Đúng định nghĩa</b> — đây là số được dùng</td></tr>
+<tr><td>Tên <code>GATE-*</code> xuất hiện trên toàn <code>scripts/</code></td><td class="v">47</td><td>Không — đếm cả cổng chưa được nối</td></tr>
+<tr><td>Số lần chuỗi <code>GATE-</code> xuất hiện trong mọi file <code>ts/tsx/mjs</code></td><td class="v">71</td><td>Không — đếm cả <b>nơi tham chiếu</b>, không phải nơi định nghĩa</td></tr>
+</tbody></table></div>
+<p><b>Hai bài học.</b> ① Con số 46 và 47 <b>đều đúng</b>, với hai cây khác nhau — thêm
+<code>GATE-VNDOC</code> ở PR #6 đã đổi 46 thành 47. Đó là lý do mọi con số quy mô phải kèm SHA.
+② <code>docs/PROGRESS.md</code> cũng dùng chữ "46" cho <b>hai việc hoàn toàn khác</b>, nên hai tài
+liệu cùng viết 46 không có nghĩa là chúng đồng ý. <b>Văn xuôi bị đếm như dữ liệu</b> — lỗi này xuất
+hiện hai lần độc lập: ở đây, và ở chỗ <code>grep -c '@@map'</code> đếm một dòng <i>comment</i> trong
+<code>schema.prisma:447</code> nói <i>về</i> <code>@@map</code>, cho ra 35 thay vì 34.</p>
+<div class="call bad"><span class="h">47 cổng, 0 file CI</span>
+<span class="tag t-meas">Đã đo</span> <b>0</b> file trong <code>.github/workflows/</code>. Nghĩa là cả
+47 cổng chỉ chạy khi <i>có người nhớ chạy</i>. Đây là nợ <b>N-1</b>, đã ghi trong
+<code>docs/agentworks/03</code>, chưa trả. Repo này có một câu về đúng tình huống đó:
+<i>"Cổng dựng xong mà không nối vào <code>verify.sh</code> thì không tồn tại."</i> Ở đây chúng đã
+nối vào <code>verify.sh</code> — nhưng <code>verify.sh</code> chưa được nối vào cái gì tự chạy.
+<b>Cập nhật sau khi đo:</b> repo này nay có <b>1</b> file trong <code>.github/workflows/</code> —
+<code>atlas-ci.yml</code>, chạy cổng của chính trang này trên mỗi PR và mỗi push. Nó tự chạy đúng MỘT
+cổng — <code>check-atlas.mjs</code> — hai lần (trên bản gốc, rồi <code>--self-test</code> để chứng minh
+cổng còn đỏ được), cộng một bước dựng thử cây xuất bản để kiểm rằng con tem <code>SOURCE.json</code>
+và phép đọc nó bên repo công khai không lệch nhau. Nhưng cổng đó chỉ là <b>nửa Atlas của
+<code>GATE-VNDOC</code></b>: 46 tên cổng còn lại không tự chạy chút nào, và nửa quét <code>.md</code>
+của chính <code>GATE-VNDOC</code> cũng không. <b>N-1 chưa đóng</b>, và nói "repo này đã có CI" sau
+commit đó là nói quá.
+Còn việc <b>đăng trang này</b> thì cố tình KHÔNG nằm trong repo này: 9Link private, mà Pages của repo
+private trên gói Pro/Team <b>vẫn công khai</b> với bất kỳ ai có URL — chỉ tổ chức trên Enterprise Cloud
+mới đặt được trang private. Nên trang được xuất bản sang một repo public riêng bằng
+<code>scripts/publish-atlas.sh</code>, một lệnh ở máy người vận hành, và nó <b>từ chối chạy nếu cổng
+đỏ</b> hoặc nếu trang còn thay đổi chưa commit.</div>
+</section>
+
+<section class="chapter" id="deploy">
+<h3>5 · Hình dạng triển khai</h3>
+<div class="tw"><table>
+<thead><tr><th>File</th><th>Service</th><th>Ghi chú</th></tr></thead>
+<tbody>
+<tr><td><code>deploy/docker-compose.yml</code></td><td class="v">6</td><td><code>postgres clickhouse redis init web worker</code> · <code>edge</code> là <b>external</b></td></tr>
+<tr><td><code>infra/docker-compose.yml</code></td><td class="v">9</td><td>6 khối có <code>profiles:</code> — gồm <code>clickhouse-uae</code>, <code>clickhouse-eu</code>, <code>postgres-uae</code>, <code>postgres-eu</code>, <code>growthbook</code>, <code>growthbook-mongo</code></td></tr>
+<tr><td><code>infra/docker-compose.demo.yml</code></td><td class="v">6</td><td>bản demo</td></tr>
+<tr><td><code>infra/docker-compose.app.yml</code></td><td class="v">2</td><td><code>web worker</code> — cùng image, khác command</td></tr>
+</tbody></table></div>
+<div class="call warn"><span class="h">Đếm service compose bằng <code>grep -c</code> cho số sai</span>
+Trên <code>deploy/docker-compose.yml</code>, grep theo mẫu thụt lề cho ra <b>11</b>; parse khối
+<code>services:</code> cho ra <b>6</b>. Chênh nhau 5 — đủ để một bảng so sánh 9 repo trở nên vô
+nghĩa. Định nghĩa ở đây là <b>parse theo thụt lề</b>, và nó nằm trong <code>repo-measure.mjs</code>.</div>
+<p><b>Mạng.</b> <code>internal {}</code> và <code>edge {external: true}</code>. Luật <b>AW-9</b>
+(ADR 0050): chỉ <code>web</code> và <code>agentworks</code> được nằm trên <code>edge</code>; mọi thứ
+thực thi mã do agent sinh ra (<code>openhands-agent-server</code>, sandbox per-task) <b>chỉ</b> nằm
+trên <code>internal</code>, dùng <code>expose:</code> chứ không <code>ports:</code>, healthcheck qua
+<code>127.0.0.1</code>, và <b>không có <code>env_file</code></b>. Đây là mở rộng một bất biến có sẵn,
+và kiểm được bằng một cổng viết ngay hôm nay.</p>
+<p><b>Caddy không nằm trong repo.</b> <span class="tag t-meas">Đã đo</span>
+<code>find -iname "*Caddyfile*"</code> = 0 file; không có service <code>caddy:</code> trong compose;
+cấu hình nginx/traefik cũng 0. Nhưng <code>scripts/launch-check.sh</code> có <b>4</b> chỗ nói về
+caddy (dòng 107, 174, 180, 191) — nghĩa là hệ <i>giả định</i> có một reverse proxy ngoài repo mà
+repo không kiểm soát. Đây là ẩn số <b>M-1</b>, gồm cả câu hỏi <code>flush_interval -1</code> cho SSE.</p>
+</section>
+
+<section class="chapter" id="absent">
+<h3>6 · Những gì cố ý không có</h3>
+<p>Một tài liệu chỉ liệt kê những gì có thì không phân biệt được "chưa làm" với "quyết định không
+làm". Danh sách dưới đây là vế thứ hai, và mỗi mục đều đã đo.</p>
+<div class="tw"><table>
+<thead><tr><th>Không có</th><th>Số đo</th><th>Vì sao cố ý</th></tr></thead>
+<tbody>
+<tr><td>Serverless / Vercel runtime</td><td class="v">0 file <code>vercel.json</code>, 0 <code>.vercel</code></td><td>ADR 0050 <b>bác</b> di trú; hybrid cũng bác <i>cho bây giờ</i>, ghi nhận là tách biệt được. Chuỗi <code>vercel</code> trong mã chỉ là danh sách chặn SSRF.</td></tr>
+<tr><td>Real-time SSE/WebSocket trong mã sản phẩm</td><td class="v">0 file</td><td>ADR 0052 chọn SSE <i>làm hướng</i>, chưa phải đã cài. Đừng mô tả như đang chạy.</td></tr>
+<tr><td>Caddyfile trong repo</td><td class="v">0 file</td><td>Reverse proxy sống ngoài repo; <code>launch-check.sh</code> chỉ <i>tham chiếu</i> nó. Là ẩn số M-1, không phải thiếu sót.</td></tr>
+<tr><td>Enum Prisma</td><td class="v">0 enum / 34 model</td><td>Trạng thái giữ ở chuỗi để thêm giá trị không cần migration — cùng lý do một job mới là một hàng.</td></tr>
+<tr><td>Bảng giá quảng cáo có dữ liệu</td><td class="v">0 hàng trên prod</td><td><b>Chiều fail đúng</b>: thiếu cấu hình thì không hứa tiền với ai.</td></tr>
+<tr><td>KYC / thuế (W-9, W-8BEN, 1099)</td><td class="v">v1 dừng ở <code>approved</code></td><td>Chuyển tiền xảy ra <b>ngoài hệ thống</b>, có chủ ý.</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- ═══════════════════ PHẦN III ═══════════════════ -->
+<div class="part" id="part-3">
+  <div class="kicker">Phần III</div>
+  <h2>Động lực và giới hạn</h2>
+  <p>Phần này là chỗ mô hình kinh doanh, ranh giới pháp lý và các cơ chế phòng thủ — cùng với giới
+  hạn thật của từng thứ.</p>
+</div>
+
+<section class="chapter" id="money">
+<h3>1 · Kinh tế cổng quảng cáo — mô hình có thanh trượt</h3>
+<div class="call bad"><span class="h">Toàn bộ chương này là <span class="tag t-model">Mô hình</span>, không phải kết quả</span>
+<code>ad_rate_cards</code> trên production có <b>0 hàng</b> và <code>ad_earnings</code> có <b>0 dòng</b>.
+Chưa có một lượt hiển thị nào được trả tiền, nên <b>chưa có bằng chứng thực địa</b> về doanh thu trên
+mỗi lượt. Thanh trượt dưới đây cho bạn thử độ nhạy của <i>cơ chế</i>; nó không dự báo doanh thu.</div>
+
+<p><b>Cấu trúc bảng giá</b> — chỗ duy nhất một con số giá đi vào hệ:</p>
+<pre><code>AdRates {
+  currency            : ISO lowercase — MỘT đồng tiền cho cả bảng (trộn nhiều đồng là bài toán FX)
+  cpmMinorByCountry   : Record&lt;ISO-2, minor units / 1000 lượt&gt;
+  defaultCpmMinor     : cho nước không có trong bảng — 0 = không trả cho lưu lượng đó
+  referralBps         : hoa hồng giới thiệu (2000 = 20%) — 0 = không có chương trình
+  holdDays            : giữ tiền bao nhiêu ngày trước khi cho rút
+  payoutThresholdMinor: ngưỡng rút tối thiểu
+}</code></pre>
+<p>Bảng giá <b>không nằm trong Core</b>. Core biết <i>cách</i> tiền sinh ra, giữ lại và mở khoá; nó
+cố ý <b>không biết</b> CPM nước nào bao nhiêu. Nhờ ranh giới đó, job kết sổ chạy trong worker của
+Core mà Core không bao giờ <code>import</code> <code>/ee</code>.</p>
+
+<h4>Bảng giá tham chiếu đang chờ kích hoạt</h4>
+<p class="small">Đối chiếu từ ouo.io, do người sáng lập duyệt — <b>chưa được cấp vào hệ</b>.
+Đơn vị: minor units (1/100 đơn vị tiền tệ) trên 1.000 lượt.</p>
+<div class="tw"><table>
+<thead><tr><th>Mục</th><th>Giá trị</th><th>Trạng thái</th></tr></thead>
+<tbody>
+<tr><td>CPM mặc định</td><td class="v">150</td><td><span class="tag t-writ">Đã viết, chưa chạy</span></td></tr>
+<tr><td>CPM — US</td><td class="v">410</td><td><span class="tag t-writ">Đã viết, chưa chạy</span></td></tr>
+<tr><td>CPM — AU</td><td class="v">500</td><td><span class="tag t-writ">Đã viết, chưa chạy</span></td></tr>
+<tr><td>Ngưỡng rút</td><td class="v">500</td><td><span class="tag t-writ">Đã viết, chưa chạy</span></td></tr>
+</tbody></table></div>
+
+<div class="sim" id="sim">
+  <h4 style="margin-top:0">Thử độ nhạy <span class="tag t-model">Mô hình</span></h4>
+  <div class="row">
+    <label for="s-imp">Lượt hiển thị<small>trong một chu kỳ kết sổ</small></label>
+    <input type="range" id="s-imp" min="0" max="1000000" step="1000" value="100000"
+      aria-describedby="o-imp" aria-label="Lượt hiển thị">
+    <span class="out" id="o-imp">100.000</span>
+  </div>
+  <div class="row">
+    <label for="s-cpm">CPM<small>minor units / 1.000 lượt · tham chiếu: mặc định 150, US 410, AU 500</small></label>
+    <input type="range" id="s-cpm" min="0" max="1000" step="5" value="150"
+      aria-describedby="o-cpm" aria-label="CPM tính bằng minor units trên một nghìn lượt">
+    <span class="out" id="o-cpm">150</span>
+  </div>
+  <div class="row">
+    <label for="s-keep">Tỉ lệ giữ lại<small>phần 9Link giữ · <b>chưa được con người nào cấp</b> — đây là giả định của bạn</small></label>
+    <input type="range" id="s-keep" min="0" max="100" step="1" value="30"
+      aria-describedby="o-keep" aria-label="Tỉ lệ phần trăm nền tảng giữ lại">
+    <span class="out" id="o-keep">30%</span>
+  </div>
+  <div class="row">
+    <label for="s-thr">Ngưỡng rút<small>minor units · tham chiếu 500</small></label>
+    <input type="range" id="s-thr" min="0" max="5000" step="50" value="500"
+      aria-describedby="o-thr" aria-label="Ngưỡng rút tối thiểu">
+    <span class="out" id="o-thr">500</span>
+  </div>
+
+  <div class="simout">
+    <div><div class="n" id="r-gross">—</div><div class="l">Tổng gross (đơn vị tiền)</div></div>
+    <div><div class="n" id="r-owner">—</div><div class="l">Chủ link nhận</div></div>
+    <div><div class="n" id="r-plat">—</div><div class="l">Nền tảng giữ</div></div>
+    <div><div class="n" id="r-elig">—</div><div class="l">Đủ ngưỡng rút?</div></div>
+  </div>
+  <p class="small" id="simnote" style="margin-bottom:0"></p>
+</div>
+
+<p><b>Cách tính</b> (để bạn kiểm bằng tay, không phải tin hộp số):
+<code>gross = lượt × CPM ÷ 1000 ÷ 100</code> (chia 100 vì CPM tính bằng <i>minor units</i>);
+<code>chủ link = gross × (1 − giữ lại)</code>; <code>nền tảng = gross × giữ lại</code>.
+So phần của chủ link với ngưỡng rút để biết một chu kỳ có <i>mở khoá được</i> một lệnh rút hay không.</p>
+
+<h4>Bảng dữ liệu của mô hình — bản đọc được bằng trình đọc màn hình</h4>
+<p class="small">Thanh trượt ở trên là công cụ trực quan; bảng này là dữ liệu thật đằng sau nó, và nó
+cập nhật theo. Một biểu đồ không có bản dữ liệu tương đương thì không phải tài liệu, nó là trang trí.</p>
+<div class="tw"><table id="simtbl" aria-live="polite">
+<thead><tr><th>Lượt hiển thị</th><th>CPM</th><th>Giữ lại</th><th>Gross</th><th>Chủ link</th><th>Nền tảng</th><th>Ngưỡng</th><th>Đủ rút?</th></tr></thead>
+<tbody><tr><td class="v">—</td><td class="v">—</td><td class="v">—</td><td class="v">—</td><td class="v">—</td><td class="v">—</td><td class="v">—</td><td class="v">—</td></tr></tbody>
+</table></div>
+
+<h4>Ba quy tắc giữ cho cơ chế tiền không mục nát</h4>
+<ul>
+  <li><b>Khoá tự nhiên 5 cột, <code>sourceWorkspaceId NOT NULL</code>, không có <code>linkId</code>.</b>
+    Một dòng <code>ad_earnings</code> không trỏ vào một link — nó trỏ vào <i>nguồn tiền</i>. Thêm
+    <code>linkId</code> sẽ làm một lượt hiển thị trên bio page và một lượt trên cổng trở thành hai
+    loại hàng khác nhau, và mọi báo cáo phải biết cả hai.</li>
+  <li><b>Phân bổ largest-remainder (ADR 0034).</b> Chia một số nguyên minor units cho nhiều bên mà
+    làm tròn từng phần thì tổng không bằng gốc — và phần thiếu đó là tiền thật của ai đó.</li>
+  <li><b>Tối đa 1 yêu cầu rút đang mở / workspace.</b> Hai yêu cầu mở là hai lần trừ trên cùng một
+    số dư, và CAS theo row chỉ cứu được khi không có hai hàng cùng tranh.</li>
+</ul>
+<div class="call"><span class="h">Đối soát biên — hệ thống được phép nói "tôi không biết"</span>
+Khi chưa có báo cáo doanh thu thật từ mạng, <code>ad_network_revenue</code> trả
+<b><code>insufficient</code> cho mọi ngày</b>. Hệ <b>từ chối kết luận</b> lãi hay lỗ thay vì bịa một
+con số. Đây là một quyết định thiết kế, không phải một tính năng bị thiếu — và nó là lý do một bảng
+đối soát trong sản phẩm này có thể có trạng thái thứ ba ngoài "khớp" và "lệch".</div>
+</section>
+
+<section class="chapter" id="opencore">
+<h3>2 · Open-core: seam là một ràng buộc pháp lý</h3>
+<p><span class="tag t-meas">Đã đo</span> <code>ee/</code> có <b>50</b> file ·
+<code>ee/LICENSE</code> = Commercial · <code>LICENSE</code> gốc là AGPL-3.0 với carve-out ở
+<b>dòng 21–22</b> · cơ chế swap entry nằm ở <code>apps/web/next.config.mjs</code>.</p>
+<p><b>Vì sao seam là pháp lý chứ không phải thẩm mỹ.</b> AGPL-3.0 lan sang tác phẩm phái sinh. Nếu
+<code>ee/</code> không được tách bằng một ranh giới <i>kiểm được</i>, thì hoặc là nó nhiễm AGPL (và
+mất khả năng bán giấy phép), hoặc là toàn bộ Core bị nghi ngờ về phạm vi. Ranh giới đó phải kiểm
+được bằng máy, không phải bằng ý định tốt.</p>
+<p><b>Năm ổ cắm, và cả năm đều seal.</b> Luật kế thừa: <i>ổ có chủ thì chủ giữ ổ, kể cả khi trả
+<code>null</code></i>. Nghĩa là một instance <code>/ee</code> có quyền trả về "không có bảng giá" —
+và Core phải tôn trọng <code>null</code> đó thay vì rơi về mặc định. Cấu hình nửa vời phải
+<b>chết lúc boot</b>, không phải chết lúc có người dùng đầu tiên.</p>
+<div class="call ok"><span class="h">Cơ chế swap entry — một dòng đáng nhớ</span>
+<code>next.config.mjs</code> đổi <code>@/lib/ee-entry</code> thành <code>ee/entry.ts</code>
+<b>nếu file đó tồn tại trên đĩa</b> — không phải một biến môi trường. Hệ quả: ranh giới
+OSS/doanh nghiệp kiểm được bằng <code>ls</code>, và một bản build OSS <i>không thể</i> vô tình bật
+tính năng doanh nghiệp vì ai đó quên unset một biến.</div>
+</section>
+
+<section class="chapter" id="sovereign">
+<h3>3 · Chủ quyền dữ liệu và luật fail-closed</h3>
+<p><b>Ba mức, và mỗi mức là một lời hứa khác nhau</b> — gộp chúng thành "có residency" là nói quá:</p>
+<div class="tw"><table>
+<thead><tr><th>Mức</th><th>Lời hứa</th><th>Trạng thái</th></tr></thead>
+<tbody>
+<tr><td><b>1</b></td><td>Nhãn vùng — dữ liệu được <i>đánh dấu</i> thuộc vùng nào</td><td><span class="tag t-writ">Đã viết, chưa chạy</span></td></tr>
+<tr><td><b>2</b></td><td>Event theo cụm — sự kiện nằm <i>trong</i> cụm của vùng đó</td><td><span class="tag t-writ">Đã viết, chưa chạy</span></td></tr>
+<tr><td><b>3</b></td><td>PII/Postgres theo cụm — một schema, nhiều cụm Postgres (ADR 0047)</td><td><span class="tag t-na">Cơ chế có, chưa triển khai</span></td></tr>
+</tbody></table></div>
+<div class="call bad"><span class="h">Fail-closed là luật, không phải tuỳ chọn</span>
+Không phân giải được vùng thì <b>từ chối ghi</b> — không bao giờ rơi về cụm mặc định. Lý do: một
+lần rơi về mặc định là một lần dữ liệu rời khỏi khu vực pháp lý mà khách hàng đã được hứa, và nó
+rời đi <b>im lặng</b>. Nhãn residency sống <b>trong schema</b>, không trong một file doc rời — vì
+một nhãn trong doc thì không có cổng nào gác được.</div>
+<p><b><code>region_directory</code> — tối thiểu hoá đến mức cực đoan.</b> Bảng này cố ý nhỏ: nó là
+chỗ duy nhất cần biết "vùng nào ở cụm nào", và mọi thứ khác hỏi nó chứ không tự suy ra. Một bảng
+directory phình ra là dấu hiệu logic định tuyến đã rò ra khỏi tầng của nó.</p>
+<p><b>Hiện trạng production, nói thẳng.</b> <span class="tag t-na">Chưa đo được</span> đích đã viết
+là đa cụm US + UAE + EU với lớp EDGE là Cloudflare Workers (PoP, &lt;50 ms). Hiện trạng là
+<b>một cụm</b>, và lớp EDGE là <b>Next.js route handler sau reverse proxy</b>.
+<code>CLOUDFLARE_*</code> có trong <code>.env.example</code> nhưng <b>0 tham chiếu trong mã</b>.</p>
+</section>
+
+<section class="chapter" id="abuse">
+<h3>4 · Chống lạm dụng là rủi ro tồn vong</h3>
+<p>Bốn lớp phòng thủ, ba lỗ hổng thật <b>đã vá</b> (được white paper kể tên, không giấu), hai nguyên
+tắc thiết kế, và một cơ chế <b>tự lành</b> — vì một dương-tính-giả không được thành án chung thân.</p>
+<div class="call warn"><span class="h">Một hệ quả đang mở, đo được, và nó im lặng</span>
+Khi <code>TRUST_EDGE_IP_HEADER</code> đang <code>off</code>, <code>adGateVisitorCountry</code> trả
+<b><code>XX</code> cho mọi người xem</b>. Hệ quả: <b>mọi campaign có khai <code>countries</code> sẽ
+không bao giờ phục vụ một lượt nào</b> — và nó không báo lỗi, nó chỉ không chạy. Cùng một gốc đó
+làm <code>/contact</code> và biên convert <b>đốt được bằng cách xoay <code>X-Forwarded-For</code></b>
+(đo: 899 lọt / 1 chặn). Đây là mục #11 trong bảng 12 việc chỉ con người quyết được.</div>
+<p><b>Blocklist là dữ liệu vận hành, không phải mã.</b> Một danh sách chặn nằm trong mã thì mỗi lần
+thêm một mục là một lần deploy — và tốc độ phản ứng với lạm dụng đo bằng phút, không bằng release.</p>
+</section>
+
+<section class="chapter" id="risk">
+<h3>5 · Ma trận rủi ro</h3>
+<div class="tw"><table>
+<thead><tr><th>Rủi ro</th><th>Cơ chế đang có</th><th>Trạng thái thật</th></tr></thead>
+<tbody>
+<tr><td><b>Trả tiền hai lần</b></td><td>CAS payout claim theo <b>rowcount</b>, không theo số dư; tối đa 1 yêu cầu mở/workspace</td><td><span class="tag t-writ">Đã viết, chưa chạy</span> — chưa có payout thật</td></tr>
+<tr><td><b>Hứa tiền mà không có cấu hình</b></td><td><code>currentRates() == null</code> ⇒ cổng không bật, không dòng sổ nào</td><td><span class="tag t-meas">Đã đo</span> — đúng là trạng thái prod hôm nay</td></tr>
+<tr><td><b>Dữ liệu rời khu vực đã hứa</b></td><td>Fail-closed: không phân giải được vùng thì từ chối ghi</td><td><span class="tag t-writ">Đã viết, chưa chạy</span> — prod một cụm</td></tr>
+<tr><td><b>Farm lưu lượng</b></td><td>Ba van: <code>CONVERT_WS_ENFORCE</code>, <code>SERVE_ENFORCE</code>, <code>INSTANCE_CAP_MULTIPLE</code></td><td><span class="tag t-na">Cả ba đang TẮT</span> — chờ lưu lượng thật để đặt ngưỡng</td></tr>
+<tr><td><b>Ẩn số mạng (<code>TRUSTED_PROXY_HOPS</code>)</b></td><td>Cấu hình đúng số hop tin cậy</td><td><span class="tag t-na">Ẩn số M-6</span> — sai là <b>tự DoS chính mình</b></td></tr>
+<tr><td><b>Cổng không được chạy</b></td><td>47 cổng trong <code>verify.sh</code></td><td><span class="tag t-meas">Đã đo</span> — 0 file CI, nợ N-1</td></tr>
+<tr><td><b>Agent sửa cổng đang chấm nó</b></td><td><code>denyPaths</code> phải gồm <code>.env*</code>, <code>infra/</code>, <code>deploy/</code>, <code>migrations/</code>, <code>ee/</code>, <code>.github/</code>, <code>scripts/gate-*.mjs</code></td><td><span class="tag t-writ">Đã viết</span> — luật A0, chưa có CI để gác</td></tr>
+</tbody></table></div>
+<p class="small">Nguyên tắc chọn rủi ro vào bảng này: chỉ những cái mà <b>cơ chế đã tồn tại trong mã</b>
+và <b>trạng thái thật khác với ấn tượng mà tên cơ chế gợi ra</b>. Một ma trận rủi ro liệt kê rủi ro
+chung chung thì không giúp ai quyết định gì.</p>
+</section>
+
+<!-- ═══════════════════ PHẦN IV ═══════════════════ -->
+<div class="part" id="part-4">
+  <div class="kicker">Phần IV</div>
+  <h2>Độ tin cậy — những gì chưa làm, và những gì đã nói sai</h2>
+  <p>White paper có nguyên một chương (§12) tên là "Những gì chưa làm — nói thẳng", với lý do được
+  viết ra: <i>"một đối tác enterprise đánh giá nhà cung cấp bằng độ chênh giữa lời hứa và mã, nên
+  chúng tôi công bố cả hai."</i> Phần này giữ nguyên tinh thần đó và thêm một chương mà bản gốc
+  chưa có: <b>log những khẳng định đã bị bác</b>.</p>
+</div>
+
+<section class="chapter" id="notdone">
+<h3>1 · Chuỗi tiền đang inert trên production</h3>
+<div class="tw"><table>
+<thead><tr><th>Sự thật</th><th>Số</th><th>Hệ quả</th></tr></thead>
+<tbody>
+<tr><td><code>ad_rate_cards</code> trên prod</td><td class="v">0 hàng</td><td><code>currentRates() == null</code></td></tr>
+<tr><td><code>ad_earnings</code> trên prod</td><td class="v">0 dòng</td><td>chưa một lần kết sổ</td></tr>
+<tr><td><code>ad_creatives</code> trên prod</td><td class="v">0</td><td><code>AD_NETWORK_9LINK_CREATIVE_IMG_ORIGINS</code> chưa cấp ⇒ kho quảng cáo rỗng</td></tr>
+<tr><td><code>ad_network_revenue</code></td><td class="v">mọi ngày = <code>insufficient</code></td><td>hệ <b>từ chối kết luận</b> lãi/lỗ thay vì bịa</td></tr>
+</tbody></table></div>
+<p>⇒ Cơ chế đã lên, <b>chưa từng chạy thật một lần nào</b>. Đây là trạng thái <b>đúng thiết kế</b>:
+thiếu cấu hình thì không hứa tiền với ai. Nhưng nó cũng có nghĩa mọi con số doanh thu trong tài liệu
+này — kể cả hộp mô hình có thanh trượt ở <a href="#money">chương trước</a> — là
+<span class="tag t-model">Mô hình</span>, không phải kết quả.</p>
+</section>
+
+<section class="chapter" id="human">
+<h3>2 · Mười hai việc chỉ con người quyết được</h3>
+<p class="small">Cột cuối là <b>hệ hành xử ra sao khi thiếu</b>, và nó đo được. Đó là điểm khác với
+một danh sách TODO: mỗi mục có một hệ quả quan sát được, nên không ai phải đoán mức nghiêm trọng.</p>
+<div class="tw"><table>
+<thead><tr><th>#</th><th>Việc</th><th>Thiếu thì hệ hành xử ra sao</th></tr></thead>
+<tbody>
+<tr><td class="v">1</td><td><code>AD_NETWORK_9LINK_CREATIVE_IMG_ORIGINS</code></td><td>Kho quảng cáo <b>rỗng</b> ⇒ 9Link Ads inert</td></tr>
+<tr><td class="v">2–3</td><td><b>CPM theo nước + tỉ lệ giữ lại</b>, và <code>AD_NETWORK_9LINK_TAG</code></td><td><code>currentRates() == null</code> ⇒ cổng <b>không bật</b> cho link mới, không dòng sổ nào. Đây là <b>hai điều kiện rời</b> — thiếu một trong hai thì vẫn <code>null</code> <b>im lặng</b>. Đã đốt một lượt cổng vì bẫy này; nay bẫy đó có cổng gác.</td></tr>
+<tr><td class="v">4</td><td>Ngưỡng rút</td><td>Mặc định 500 minor</td></tr>
+<tr><td class="v">5</td><td><code>PAYOUT_PROFILE_KEY</code></td><td>Không đòi hồ sơ nhận tiền; đường rút chạy y như trước M40</td></tr>
+<tr><td class="v">6</td><td><code>CONTACT_INBOX</code></td><td><code>/contact</code> <b>404</b> — khách enterprise không có đường hỏi</td></tr>
+<tr><td class="v">7</td><td><b>Hợp đồng mạng quảng cáo thật</b></td><td>Chỉ có ổ cắm + tag template</td></tr>
+<tr><td class="v">8</td><td><b>Điều khoản cho người kiếm tiền</b></td><td>Cơ chế <code>reversed</code> đã cài nhưng <b>không có chỗ dựa pháp lý</b></td></tr>
+<tr><td class="v">9</td><td><b>KYC/thuế</b> (W-9/W-8BEN, 1099)</td><td>v1 dừng ở <code>approved</code>, chuyển tiền ngoài hệ — <b>có chủ ý</b></td></tr>
+<tr><td class="v">10</td><td><b>Báo cáo doanh thu mạng theo (ngày, nước)</b></td><td>Mọi ngày = <code>insufficient</code></td></tr>
+<tr><td class="v">11</td><td><b>Cloudflare trước origin</b> rồi <code>TRUST_EDGE_IP_HEADER=cf</code></td><td>Đang <code>off</code> ⇒ <code>/contact</code> và biên convert <b>đốt được bằng cách xoay <code>X-Forwarded-For</code></b> (đo: 899 lọt / 1 chặn). Kèm hệ quả quảng cáo: <code>adGateVisitorCountry</code> trả <code>XX</code> cho <b>mọi</b> người xem ⇒ mọi campaign có khai <code>countries</code> không bao giờ phục vụ một lượt nào, <b>im lặng</b>.</td></tr>
+<tr><td class="v">12</td><td><code>SERVE_ENFORCE</code> (nay <code>0</code>)</td><td>Prod <b>đang đo mà không chặn</b></td></tr>
+</tbody></table></div>
+</section>
+
+<section class="chapter" id="breakers">
+<h3>3 · Ba cầu dao "chỉ đo" treo trên cùng một gốc</h3>
+<p>Ba van chống lạm dụng <b>đã có cơ chế, đã đo được, và đều đang tắt</b> — và cả ba chờ <b>đúng một
+thứ</b>: lưu lượng thật để đặt ngưỡng.</p>
+<div class="tw"><table>
+<thead><tr><th>Van</th><th>Vì sao chưa bật</th></tr></thead>
+<tbody>
+<tr><td><code>CONVERT_WS_ENFORCE</code></td><td>Bật khi chưa tách được lưu lượng kẻ tấn công khỏi của khách = đổi lỗ "doanh thu bịa" lấy lỗ <b>"xoá doanh thu thật"</b> — tệ hơn</td></tr>
+<tr><td><code>SERVE_ENFORCE</code></td><td>Prod đang đo, chưa chặn</td></tr>
+<tr><td>Cầu dao instance (<code>INSTANCE_CAP_MULTIPLE</code>)</td><td><i>"Phải chờ nhìn số thật."</i> Cho nó quyền chặn là đặt một công tắc <b>tắt doanh thu toàn nền tảng</b> vào tay kẻ farm</td></tr>
+</tbody></table></div>
+<div class="call"><span class="h">Vì sao ba van tắt lại là quyết định, không phải sơ suất</span>
+Mỗi van là một đánh đổi giữa hai loại lỗ, và <b>chưa có số liệu để biết loại nào đắt hơn</b>. Bật
+sớm không phải "an toàn hơn" — nó là đổi một rủi ro đã hiểu lấy một rủi ro chưa đo. Cả ba treo trên
+mục #2/#3 của bảng 12 việc: chưa có lưu lượng thật thì chưa có ngưỡng đúng.</div>
+<h4>Kiến trúc đích chưa đạt</h4>
+<div class="tw"><table>
+<thead><tr><th></th><th>Đích đã viết</th><th>Hiện trạng</th></tr></thead>
+<tbody>
+<tr><td><b>Lớp EDGE</b></td><td>Cloudflare Workers, PoP US/UAE/EU, &lt;50 ms</td><td><b>Next.js route handler</b> sau reverse proxy. <code>CLOUDFLARE_*</code> có trong <code>.env.example</code>, <b>0 tham chiếu trong mã</b></td></tr>
+<tr><td><b>Residency prod</b></td><td>Đa cụm US + UAE + EU</td><td><b>Một cụm</b></td></tr>
+<tr><td><b>Đa vùng Postgres</b></td><td>Hình dạng B — mỗi vùng một deployment</td><td>Cơ chế có, <b>chưa triển khai</b></td></tr>
+</tbody></table></div>
+</section>
+
+<section class="chapter" id="corrections">
+<h3>4 · Log sửa lỗi công khai</h3>
+<p>Mục này mượn trực tiếp một thông lệ của tài liệu tham chiếu mà Atlas này mô phỏng: <b>ghi lại
+công khai những con số đã từng sai</b>. Lý do không phải để tự trách — mà vì một lỗi đo
+<b>đã xảy ra một lần</b> thì sẽ xảy ra lại, và người tiếp theo chỉ tránh được nó nếu nó được viết
+ra cùng nguyên nhân gốc.</p>
+
+<div class="fix">
+  <div class="wrong">✗ Đã khẳng định: "white paper lệch <b>+437 dòng</b> so với thực tế"</div>
+  <div class="right">✓ Đúng: white paper khai ~108.700, đo chính xác <b>108.685</b> — lệch <b>15 dòng (0,014%)</b>, tức white paper <b>chính xác</b></div>
+  <div class="cause"><b>Nguyên nhân gốc:</b> hai lỗi định nghĩa cộng hưởng — vị từ phân loại test thiếu mẫu
+  đường dẫn <code>(^|/)tests?/</code> nên <b>452 dòng e2e bị xếp vào mã nguồn</b>; và cộng cả phần mở
+  rộng không phải <code>.ts/.tsx</code> vào một đại lượng vốn chỉ định nghĩa trên <code>.ts/.tsx</code>.
+  <b>Bài học:</b> khi phép đo lệch <i>nhỏ</i> so với số tự khai, hãy ngờ phép đo của mình trước —
+  một phép đo sai trông y như một chênh lệch 0,4% hợp lý, đủ để buộc tội một tài liệu đúng là đã cũ.</div>
+  <div class="srcline">đo tại 9e3455c · nguồn: docs/so-sanh-cac-repo.md §4.2</div>
+</div>
+
+<div class="fix">
+  <div class="wrong">✗ Đã công bố: Prisma có <b>35</b> <code>@@map</code></div>
+  <div class="right">✓ Đúng: <b>34</b></div>
+  <div class="cause"><b>Nguyên nhân gốc:</b> <code>grep -c '@@map'</code> đếm <b>dòng chứa chuỗi</b>, và
+  <code>packages/db/prisma/schema.prisma:447</code> là một <i>comment nói về</i> <code>@@map</code>,
+  không phải một mapping. <b>Bài học:</b> văn xuôi bị đếm như dữ liệu. Sửa thành đếm
+  <code>@@map(</code> theo lần xuất hiện.</div>
+  <div class="srcline">nguồn: docs/so-sanh-cac-repo.md §4.3 · bảng §3.2 đã sửa 35 → 34</div>
+</div>
+
+<div class="fix">
+  <div class="wrong">✗ Bộ đo cho ra: <b>1</b> migration</div>
+  <div class="right">✓ Đúng: <b>55</b> thư mục migration</div>
+  <div class="cause"><b>Nguyên nhân gốc:</b> bộ đo đếm <b>chính thư mục <code>migrations/</code></b> thay
+  vì các thư mục con của nó ⇒ mọi repo đều ra 1. <b>Vì sao nguy hiểm:</b> 1 là một con số
+  <i>quá hợp lý</i> — không ai nghi một repo có 1 migration. Một con số sai mà trông hợp lý thì
+  không phép đối chiếu thông thường nào bắt được; cái bắt được là <b>một con số mốc đã biết trước</b>.</div>
+  <div class="srcline">nguồn: docs/so-sanh-cac-repo.md §4.3</div>
+</div>
+
+<div class="fix">
+  <div class="wrong">✗ Bộ đo cho ra: <b>1</b> file real-time trong mã sản phẩm</div>
+  <div class="right">✓ Đúng: <b>0</b></div>
+  <div class="cause"><b>Nguyên nhân gốc:</b> chính <code>scripts/repo-measure.mjs</code> chứa các từ khoá
+  SSE/WebSocket trong một regex ⇒ <b>bộ đo tự phát hiện chính nó</b>, và một comment giải thích
+  WebSocket cũng bị tính. <b>Vì sao nguy hiểm:</b> 1 đúng là con số mà trực giác về 9Link
+  <i>cho là có</i> — nên nó khớp định kiến thay vì gây nghi ngờ.</div>
+  <div class="srcline">nguồn: docs/so-sanh-cac-repo.md §4.3</div>
+</div>
+
+<div class="fix">
+  <div class="wrong">✗ <code>GATE-WALLET</code> đã chết <b>~8 ngày</b> mà không ai biết</div>
+  <div class="right">✓ Nguyên nhân: một mẫu thử ghim ngày tuyệt đối <code>2026-08-01</code> cạnh một truy vấn có cửa sổ trượt 30 ngày</div>
+  <div class="cause"><b>Nguyên văn được ghi lại:</b> <i>"Mẫu thử ghim ngày tuyệt đối cạnh một truy vấn có
+  cửa sổ trượt là mìn hẹn giờ, và nó nổ vào một ngày không ai commit gì."</i> <b>Bài học:</b> cổng xanh
+  không có nghĩa hệ đúng — nó có nghĩa <i>phép thử còn nhìn thấy dữ liệu</i>. Một cổng chưa từng đỏ
+  là một cổng chưa được biết là có tác dụng.</div>
+  <div class="srcline">nguồn: docs/WHITEPAPER.md §14.3 · HANDOFF.md</div>
+</div>
+
+<div class="fix">
+  <div class="wrong">✗ Ba khẳng định của chính tác giả tài liệu về 2FA</div>
+  <div class="right">✓ Cả ba <b>sai khi đo</b></div>
+  <div class="cause"><b>Nguyên văn:</b> <i>"Đừng tin chú thích mình vừa viết."</i> Đây là mục quan trọng
+  nhất trong log này không vì 2FA, mà vì nó nói rằng <b>người viết tài liệu cũng là một nguồn lỗi</b> —
+  nên một tài liệu chỉ tự kiểm bằng cách đọc lại thì không tự kiểm gì cả.</div>
+  <div class="srcline">nguồn: docs/WHITEPAPER.md §14.3</div>
+</div>
+
+<div class="fix">
+  <div class="wrong">✗ "Gate HITL chờ 20 giờ tốn <b>0 giờ compute</b>"</div>
+  <div class="right">✓ Sai trên runtime dài hạn: tiến trình vẫn chiếm bộ nhớ. Đúng là <b>0 token, 0 lời gọi LLM, một lượng bộ nhớ không đáng kể</b></div>
+  <div class="cause"><b>Nguyên nhân gốc:</b> câu đó đúng trên serverless (không có tiến trình nào tồn tại
+  giữa hai lần gọi) và <b>sai</b> trên self-host dài hạn. Đã sửa ở ba chỗ khi ADR 0050 chốt giữ
+  runtime. <b>Bài học:</b> một khẳng định về chi phí phải nói rõ <i>trên mô hình runtime nào</i>.</div>
+  <div class="srcline">nguồn: docs/adr/0050 · docs/agentworks/03 (A3.1–A3.12)</div>
+</div>
+
+<div class="fix">
+  <div class="wrong">✗ Chính trang này từng viết "<b>ba thanh trượt</b> của mô hình quảng cáo" và "<code>--self-test</code> # <b>9 đột biến</b>"</div>
+  <div class="right">✓ Đúng: trang có <b>4</b> thẻ <code>&lt;input type="range"&gt;</code>, và cổng có <b>10</b> đột biến — <b>ngay từ commit sinh ra trang này</b> (<code>16d158c</code>, kiểm bằng <code>git show</code>). Lệch 1 đơn vị ở cả hai chỗ: <b>25%</b> và <b>10%</b></div>
+  <div class="cause"><b>Nguyên nhân gốc:</b> hai con số đó là <b>CHỮ</b>, không phải mã. Cổng kiểm DOM và hợp đồng nội dung,
+  nhưng nó <b>không đọc văn xuôi</b>, nên một câu sai số lượng không làm đỏ bất cứ thứ gì. Cùng commit
+  <code>16d158c</code> có <b>bốn</b> bản sao của hai con số ấy — hai trong trang này, hai trong chú thích
+  <code>scripts/verify.sh</code> — và lượt sửa trước chỉ vá được <b>một</b> (<code>9/9</code> →
+  <code>10/10</code>), rồi tuyên bố là đã xong. <b>Bài học:</b> sửa một con số đã trôi thì phải đi tìm
+  <b>mọi bản sao</b> của nó; và tốt hơn cả là đừng để bản sao tồn tại. Nay có phép kiểm <b>A6 "văn xuôi
+  khớp số đo"</b>: nó rút lời khai số trong văn bản rồi so với phép đo thật (số thẻ
+  <code>&lt;input type="range"&gt;</code>, <code>MUTATIONS.length</code>), kèm hai đột biến bẻ chữ để chứng
+  minh nó đỏ được, và một vế <b>"câm thì báo lỗi"</b> — chính vế đó đã bắt được lỗi đầu tiên của A6:
+  regex viết <code>[a-zA-Z0-9]</code> nên không khớp nổi chữ "bốn" (dấu mũ trong <code>ố</code> không thuộc
+  ASCII), tức một cổng kiểm <b>tiếng Việt</b> mà mù phần lớn tài liệu tiếng Việt.</div>
+  <div class="srcline">đo bằng git show 16d158c:docs/atlas/index.html · nguồn: scripts/check-atlas.mjs (A6)</div>
+</div>
+</section>
+
+<section class="chapter" id="evidence">
+<h3>5 · Bằng chứng kỹ thuật</h3>
+<div class="stats">
+  <div class="stat"><div class="n">45</div><div class="l">mốc đã đóng M0 → M45</div></div>
+  <div class="stat"><div class="n">9/9</div><div class="l">trụ sống</div></div>
+  <div class="stat"><div class="n">0 / 0</div><div class="l">lỗi <code>tsc</code> / <code>eslint</code></div></div>
+  <div class="stat"><div class="n">47</div><div class="l">cổng <code>GATE-*</code> trong <code>verify.sh</code></div></div>
+  <div class="stat"><div class="n">119</div><div class="l">file <code>.md</code> trong <code>docs/</code></div></div>
+  <div class="stat"><div class="n">28/28</div><div class="l">khối Mermaid parse được</div></div>
+</div>
+<p><b>"Định nghĩa xong" có sáu vế</b>, và đó là lý do con số 45 mốc có nghĩa: một mốc chỉ đóng khi cả
+sáu vế đạt, không phải khi tính năng "trông như chạy".</p>
+<p><b>Văn hoá ghi lại sai lầm có số đo.</b> <span class="tag t-meas">Đã đo</span>
+<code>HANDOFF.md</code> <b>443 KB</b> · <code>docs/PROGRESS.md</code> <b>4.989 dòng</b> — ghi
+<i>nguyên nhân gốc</i> của từng sự cố, kể cả sự cố do chính người viết tài liệu gây ra. Một repo có
+log sửa lỗi dài là một repo đã phạm nhiều lỗi <b>hoặc</b> đã ghi lại chúng; chỉ repo không có log thì
+không phân biệt được hai trường hợp đó, và đó mới là trường hợp đáng lo.</p>
+<div class="call warn"><span class="h">Giới hạn của chính trang bằng chứng này</span>
+<code>verify.sh</code> đầy đủ <b>chưa chạy được</b> trong môi trường dựng tài liệu này, vì nó cần
+Docker và dừng ở <code>GATE-PREFLIGHT</code>. Con số "28/28 Mermaid parse được" là của
+<code>scripts/check-vn-docs.mjs</code> chạy trực tiếp trên <code>docs/</code> (119 file, 0 lỗi,
+0 cảnh báo), không phải của một lượt <code>verify.sh</code> trọn vẹn. Ghi rõ thay vì để một con số
+mượn uy tín của một lượt chạy đã không xảy ra.</div>
+</section>
+
+<!-- ═══════════════════ PHẦN V ═══════════════════ -->
+<div class="part" id="part-5">
+  <div class="kicker">Phần V</div>
+  <h2>Hệ sinh thái và việc còn lại</h2>
+  <p>9Link không đứng một mình: có <b>9 repo</b> dưới cùng một chủ sở hữu, và một bảng so sánh chúng
+  đang được dựng trong <code>docs/so-sanh-cac-repo.md</code> (456 dòng). Bảng đó mới viết được
+  <b>1/9</b>, và lý do là một câu chuyện đáng kể về quyền truy cập hơn là về kỹ thuật.</p>
+</div>
+
+<section class="chapter" id="ecosystem">
+<h3>1 · Chín repo: một đã đo, tám để trống</h3>
+<div class="tw"><table id="eco">
+<thead><tr><th>Repo</th><th>Đọc được mã nguồn</th><th>Ý nghĩa của mã trạng thái</th></tr></thead>
+<tbody>
+<tr><td><b>9Link</b></td><td><span class="tag t-meas">200</span></td><td>private nhưng GitHub App <b>được cài</b> ⇒ đọc/ghi bình thường, <code>push=true</code></td></tr>
+<tr><td>9Link-V2</td><td><span class="tag t-na">403</span></td><td rowspan="8"><b>Tồn tại</b> (nếu không đã là 404) nhưng <b>nằm ngoài danh sách repo của installation</b>. Đã kiểm 5 lần, lần nào cũng 8/8.</td></tr>
+<tr><td>9Link-V3</td><td><span class="tag t-na">403</span></td></tr>
+<tr><td>9Link-new</td><td><span class="tag t-na">403</span></td></tr>
+<tr><td>9link-browser</td><td><span class="tag t-na">403</span></td></tr>
+<tr><td>9do</td><td><span class="tag t-na">403</span></td></tr>
+<tr><td>olacity</td><td><span class="tag t-na">403</span></td></tr>
+<tr><td>olacity-v1</td><td><span class="tag t-na">403</span></td></tr>
+<tr><td>olacity-docs-web</td><td><span class="tag t-na">403</span></td></tr>
+<tr><td class="blank">zzz-khong-ton-tai-xyz-99</td><td><span class="tag t-na">404</span></td><td><b>Đối chứng</b> — repo không tồn tại phải ra 404, để biết 403 là phán quyết thật</td></tr>
+<tr><td class="blank">MetaGPT · NotionNext · FlowX · lila</td><td><span class="tag t-meas">200</span></td><td><b>Đối chứng</b> — public, nhưng <b>không</b> chứng minh App có quyền</td></tr>
+</tbody></table></div>
+<p><b>Vì sao 403 và 404 phải đi cùng nhau.</b> Một con 403 đơn độc không phân biệt được "hết quyền"
+với "mạng hỏng". Chỉ khi <i>trong cùng một lượt</i> repo không tồn tại ra 404, repo public ra 200,
+và repo private trong phạm vi ra 200 với <code>push=true</code>, thì 403 mới có nghĩa là
+<b>"repo này tồn tại và bạn không được cấp"</b>.</p>
+<div class="call bad"><span class="h">Vì sao "đã tick trong Settings" mà vẫn 403</span>
+Token của một phiên agent là <b>installation token</b>, và GitHub cấp nó kèm <b>danh sách repo chốt
+tại lúc cấp</b> (sống khoảng 1 giờ). Tick thêm repo trong Settings <b>không</b> làm một token
+<i>đã cấp</i> rộng ra — nó vẫn mang danh sách cũ tới khi có một token <b>mới</b>. Vậy việc cần làm
+<b>không phải tick lại</b>, mà là <b>cấp lại token</b>: ngắt rồi nối lại GitHub, hoặc mở một phiên mới.
+Tiêu chí "đã thông" là một lệnh trả về <b>tên nhánh</b>, không phải một dấu tick trên trang Settings.</div>
+<p><b>Một phép thử không dùng được.</b> Gọi <code>curl</code> <i>không kèm token</i> để phân biệt
+"private" với "đã xoá" <b>không phải</b> một lượt gọi vô danh khi chạy trong một môi trường có proxy:
+lượt gọi vẫn được gắn chính token của integration, và body trả về y nguyên. Hai dòng cùng một token
+<b>không phải hai phép thử</b> — ghi nó vào bảng như "bằng chứng độc lập" là tự lừa.</p>
+<pre><code># Kiểm tra trong 20 giây, chạy từ thư mục gốc của checkout:
+bash scripts/survey-9repo.sh --gate
+
+# Khi cả 9 ra 200, đo đủ:
+bash scripts/survey-9repo.sh &gt; survey.txt 2&gt;&amp;1
+# rồi điền bảng từ $WORK/survey.json — không gõ lại bằng tay</code></pre>
+</section>
+
+<section class="chapter" id="laws">
+<h3>2 · Sáu luật để điền một bảng so sánh mà không tự lừa</h3>
+<p>Sáu luật này đều ra đời từ một lần vi phạm cụ thể, không phải từ một nguyên tắc chung chung.</p>
+<ol>
+  <li><b>Mọi con số kích thước kèm SHA + ngày + định nghĩa.</b> Thiếu một trong ba thì không kiểm lại
+    được. 9Link đã đổi <span class="num">84.992 → 85.998</span> dòng src trong <i>một ngày</i>.</li>
+  <li><b>LOC luôn ghi phạm vi phần mở rộng.</b> Cùng một repo: mọi phần mở rộng cho src
+    <span class="num">85.998</span>, chỉ <code>.ts/.tsx</code> cho <span class="num">72.457</span> —
+    chênh nhau hơn 13 nghìn dòng và cả hai đều đúng.</li>
+  <li><b>Khi phép đo lệch nhỏ so với số tự khai, ngờ phép đo của mình trước.</b> Xem Lệch 1 ở
+    <a href="#drift">chương trên</a>: 0,47 và 0,59 đều đúng.</li>
+  <li><b>Đóng băng một script và dùng lại.</b> Viết lại bộ đếm LOC bằng một ngôn ngữ khác là đổi vị từ,
+    và đổi vị từ một chút là <span class="num">452</span> dòng nhảy nhóm.</li>
+  <li><b>Không suy từ tên.</b> <code>V2</code>/<code>V3</code>/<code>-new</code> có thể là fork, viết
+    lại, thử nghiệm bỏ, hoặc nhánh song song. Chiều "quan hệ với 9Link" chỉ được điền sau khi diff
+    <code>package.json</code> + cây thư mục + vài file trùng tên.</li>
+  <li><b>Ô trống có lý do tốt hơn một con số sai.</b> Một bảng có tám ô trống kèm ghi chú "chưa đo
+    được — 403" là một bảng <i>kiểm chứng được</i>. Một bảng chín ô đầy là một bảng đẹp.</li>
+</ol>
+<div class="call ok"><span class="h">Điều đã đổi: từ "nghĩ ra tiêu chí" thành "chạy một lệnh"</span>
+Cả 18 chiều nay là <b>mã chạy được</b> trong repo: <code>scripts/loc.py</code> (đếm LOC, bản duy nhất)
+· <code>scripts/repo-measure.mjs</code> (12 chiều offline, có <code>--json</code> và cờ <code>--loc</code>
+để <b>tự đỏ</b> khi lệch số khai) · <code>scripts/survey-9repo.sh</code> (cổng quyền có đối chứng,
+6 chiều API, vòng 9 repo). Khi quyền được cấp lại, tám cột còn lại là việc <b>điền số</b>.</div>
+</section>
+
+<section class="chapter" id="debts">
+<h3>3 · Nợ đã ghi, chưa trả</h3>
+<div class="tw"><table>
+<thead><tr><th>Nợ</th><th>Nội dung</th><th>Vì sao chưa trả</th></tr></thead>
+<tbody>
+<tr><td><b>N-1</b></td><td>47 cổng không tự chạy. Trên cây <code>2d24b47</code>: <b>0</b> file trong <code>.github/workflows/</code>. Nay có <b>1</b> file (<code>atlas-ci.yml</code>, không đăng gì — chỉ chạy cổng Atlas) nhưng nó chỉ tự chạy nửa Atlas của <code>GATE-VNDOC</code> ⇒ <b>chưa đóng</b></td><td>Cần một quyết định về nơi chạy <code>verify.sh</code> (nó cần Docker và một server)</td></tr>
+<tr><td><b>M-1</b></td><td>Caddy sống ngoài repo; <code>flush_interval -1</code> cho SSE chưa xác nhận</td><td>Không đo được từ trong repo — <code>launch-check.sh</code> chỉ tham chiếu</td></tr>
+<tr><td><b>M-2</b></td><td>Checkpoint-postgres cần một spike</td><td>Chưa có tải thật để đo</td></tr>
+<tr><td><b>M-3</b></td><td>Protocol giữa <code>clients/typescript</code> và <code>openhands-agent-server</code></td><td>Tài liệu upstream chưa đủ để kết luận</td></tr>
+<tr><td><b>M-4</b></td><td>RAM của host chạy AgentWorks</td><td>Cần số của máy thật, không suy ra được</td></tr>
+<tr><td><b>M-6</b></td><td><code>TRUSTED_PROXY_HOPS</code> / <code>AUTH_TRUSTED_PROXIES</code></td><td>Sai là <b>tự DoS chính mình</b> — cần biết chính xác bao nhiêu hop</td></tr>
+<tr><td><b>M-7</b></td><td>Mạng <code>internal</code> và secret khi trải qua nhiều host</td><td>Chưa có deployment đa host thật</td></tr>
+</tbody></table></div>
+<p class="small">Điểm chung của cả bảy mục: <b>không mục nào trả được bằng cách viết thêm mã</b>. Mỗi
+mục cần một con số từ thế giới thật — một cái máy, một cấu hình proxy, một lượt tải. Đó là lý do
+chúng là <i>nợ</i> chứ không phải <i>việc còn lại</i>.</p>
+</section>
+
+<section class="chapter" id="next">
+<h3>4 · Việc còn lại, theo thứ tự</h3>
+<div class="tw"><table>
+<thead><tr><th>#</th><th>Việc</th><th>Chặn bởi</th><th>Trạng thái</th></tr></thead>
+<tbody>
+<tr><td class="v">1</td><td>Cấp lại token để đọc 8 repo</td><td>—</td><td><span class="tag t-na">Chưa thông</span> — 8/8 vẫn 403 qua 5 lần kiểm</td></tr>
+<tr><td class="v">2</td><td>Đo 8 repo bằng đúng 18 chiều</td><td>(1)</td><td><span class="tag t-meas">Công cụ xong</span> — chỉ còn là chạy</td></tr>
+<tr><td class="v">3</td><td><code>docs/c4/</code> + white paper tiếng Việt cho từng repo</td><td>(2)</td><td><span class="tag t-meas">Cổng xong</span> (<code>GATE-VNDOC</code>) — nội dung chờ (2)</td></tr>
+<tr><td class="v">4</td><td>PR riêng từng repo, merge từng cái</td><td>(2)(3)</td><td><span class="tag t-na">Chờ (1)</span></td></tr>
+<tr><td class="v">5</td><td>Điền nốt file hub so sánh</td><td>(2)</td><td><span class="tag t-writ">Phần không phụ thuộc 8 repo đã làm</span></td></tr>
+<tr><td class="v">6</td><td>CI thật cho 47 cổng (nợ N-1)</td><td>—</td><td><span class="tag t-na">Chưa bắt đầu</span></td></tr>
+</tbody></table></div>
+<p><b>Năm tiêu chí huỷ</b> đã được viết trong kế hoạch AgentWorks, cùng một khung thời gian
+<b>7–13 tuần</b>. Việc một kế hoạch có tiêu chí huỷ <i>trước khi</i> bắt đầu là một tín hiệu đáng chú
+ý hơn bất kỳ con số quy mô nào ở Phần II: nó nghĩa là kế hoạch đó được viết để <b>có thể bị bác</b>.</p>
+</section>
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="part" id="quiz">
+  <div class="kicker">Kiểm tra</div>
+  <h2>Quiz 12 câu về các bất biến</h2>
+  <p>Mười hai câu này không kiểm trí nhớ về sản phẩm — chúng kiểm <b>bạn có đọc đúng các nhãn độ tin
+  cậy không</b>. Nhiều câu có đáp án nghe hợp lý hơn nhưng sai, và đó là chủ ý.</p>
+  <div id="qscore" aria-live="polite">Chưa trả lời câu nào.</div>
+  <div class="quiz" id="quizbox"></div>
+</div>
+
+<!-- ═══════════════════ ĐỊNH NGHĨA ═══════════════════ -->
+<div class="part" id="defs">
+  <div class="kicker">Tái lập</div>
+  <h2>Định nghĩa và lệnh tái lập</h2>
+  <p>Mọi con số <span class="tag t-meas">Đã đo</span> trong tài liệu này tái lập được bằng ba lệnh
+  dưới đây, chạy từ thư mục gốc của một checkout ở <code>2d24b47</code>.</p>
+</div>
+
+<section class="chapter">
+<h3>Ba lệnh</h3>
+<pre><code># 1. Đếm LOC — bản DUY NHẤT, cấm viết lại bằng ngôn ngữ khác
+python3 scripts/loc.py .
+
+# 2. Đo 12 chiều offline (6 chiều API sẽ in `n/a` kèm lý do, không đoán)
+node scripts/repo-measure.mjs .
+node scripts/repo-measure.mjs . --json      # dạng máy đọc
+
+# 3. Cổng quyền + 6 chiều API + vòng 9 repo
+bash scripts/survey-9repo.sh --gate         # 20 giây
+bash scripts/survey-9repo.sh                # đủ, xuất survey.json</code></pre>
+
+<h3>Phép neo — chứng minh bộ đo còn đúng trước khi tin nó</h3>
+<pre><code>git worktree add /tmp/anchor 9e3455c
+node scripts/repo-measure.mjs /tmp/anchor \
+  --loc src=84992,unit=50703,e2e=36228,total=171923,tsSrc=72457</code></pre>
+<p>Cờ <code>--loc</code> làm script <b>đỏ (exit 1)</b> khi số đo lệch số khai. Đó là cách duy nhất
+biết bộ đo còn đúng sau này — và chính nó đã bắt được <b>bốn</b> chỗ lệch, trong đó một chỗ là lỗi
+của bảng đã công bố. Đã chạy lại ngày 2026-11-09 trên cây <code>349f54a</code> và
+<code>2d24b47</code>: <b>đạt</b>.</p>
+
+<h3>Cổng tài liệu</h3>
+<pre><code>node scripts/check-vn-docs.mjs               # = GATE-VNDOC trong verify.sh
+node scripts/check-vn-docs.mjs --self-test   # mỗi phép phải ĐỎ trên file hỏng VÀ IM trên file đúng
+node scripts/check-atlas.mjs                 # = GATE-VNDOC (phần Atlas): DỰNG trang này bằng jsdom rồi BẤM thật
+node scripts/check-atlas.mjs --self-test     # 12 đột biến, mỗi cái phải làm ĐỎ đúng phép kiểm của nó</code></pre>
+<p>Kết quả trên <code>docs/</code>: <b>119 file · 145 link tương đối · 28/28 khối Mermaid parse được ·
+0 lỗi · 0 cảnh báo</b>. <code>--self-test</code> bắt buộc phải đạt <b>4/4</b>, theo một bài học của
+chính repo: <i>một cổng chưa từng đỏ là một cổng chưa được biết là có tác dụng</i>. Mỗi phép kiểm có
+<b>hai vế</b> — file hỏng phải bị bắt, <b>và</b> file đúng phải im. Vế thứ hai bắt được đúng lỗi mà
+một cổng chỉ-có-vế-đỏ không bao giờ thấy: hai lỗi đầu tiên mà cổng này tìm ra đều là
+<b>đỏ-giả</b>.</p>
+
+<div class="call warn"><span class="h">Vì sao chính TRANG NÀY có một cổng riêng</span>
+Ở lượt viết đầu tiên của file này, một toán tử ba ngôi bị cụt (thiếu nhánh <code>false</code>) làm
+<b>chết cả khối <code>&lt;script&gt;</code></b> lúc parse. Hệ quả: đổi nền, thanh tiến trình đọc, lọc
+và sắp xếp bảng 18 chiều, bốn thanh trượt của mô hình quảng cáo và quiz 12 câu <b>cùng im lặng một
+lúc</b> — mà trang trông <i>không khác gì</i> trang đúng: cùng kích thước, cùng số dòng, văn bản vẫn
+đọc được. <b>Một trang tương tác chết và một trang tương tác sống không phân biệt được bằng mắt</b>,
+nên <code>node --check</code> là không đủ: cú pháp đúng chỉ nói rằng <i>khối script này</i> parse được,
+không nói rằng bấm vào thì có phản hồi. <code>check-atlas.mjs</code> dựng trang bằng jsdom, bấm thật
+từng widget rồi <b>đọc lại con số hiện ra</b> — ví dụ nó đòi đúng chuỗi <code>150,00</code> cho
+100.000 lượt × CPM 150, và đòi <code>hiện 0 / 18 chiều</code> khi lọc sang nhãn "Chưa đo được".
+Lượt <code>--self-test</code> đầu tiên của chính cổng ấy ra <b>2 phép kiểm im khi phải đỏ</b>, và khi
+sửa thì lộ ra phép kiểm CJK của nó <b>chết hẳn</b> (một regex chép tay đóng ngoặc vuông sai chỗ nên
+không bao giờ khớp). Cổng kiểm tài liệu này cũng cần được kiểm — đó là lý do nó không chép lại định
+nghĩa CJK mà <b>rút trực tiếp từ <code>check-vn-docs.mjs</code></b> lúc chạy.</div>
+
+<div class="call warn"><span class="h">Hai bẫy khi chạy lại</span>
+<b>①</b> Cổng Mermaid cần <code>mermaid@11</code> + <code>jsdom</code>; thiếu thì nó <b>exit 3</b> và
+được <b>đếm là bỏ qua</b>, không im lặng xanh. Cài bằng
+<code>npm install --prefix .tools --no-save mermaid@11 jsdom</code> — và <code>.tools/</code> được
+ignore, nên nó không tồn tại giữa các phiên làm việc.
+<b>②</b> <code>verify.sh</code> trọn vẹn cần Docker; trong một môi trường không có Docker nó dừng ở
+<code>GATE-PREFLIGHT</code> và con số "123 want" chỉ là <b>dự kiến</b>, không phải đã chạy.</div>
+</section>
+
+<section class="chapter" id="sources">
+<h3>Nguồn và giới hạn của tài liệu này</h3>
+<div class="tw"><table>
+<thead><tr><th>Nguồn</th><th>Dùng cho</th><th>Giới hạn</th></tr></thead>
+<tbody>
+<tr><td><code>docs/WHITEPAPER.md</code> — 1.176 dòng</td><td>Toàn bộ khẳng định về sản phẩm, kinh doanh, kiến trúc</td><td>Là tài liệu <b>tự khai</b>; ba chỗ lệch số đo được ghi ở <a href="#drift">chương Lệch</a></td></tr>
+<tr><td><code>scripts/repo-measure.mjs</code> trên <code>2d24b47</code></td><td>Mọi con số <span class="tag t-meas">Đã đo</span></td><td>Phủ 12/18 chiều; 6 chiều cần API</td></tr>
+<tr><td>GitHub API qua <code>gh</code></td><td>6 chiều API + cổng quyền + đối chứng</td><td><code>license.spdx_id</code> <b>không đáng tin</b> — phải đọc thân file</td></tr>
+<tr><td><code>docs/so-sanh-cac-repo.md</code> — 456 dòng</td><td>18 định nghĩa, §4.1–§4.3 về lỗi đo, 6 luật</td><td>Bảng 9 repo mới có 1/9 cột</td></tr>
+<tr><td><code>docs/adr/</code> — 50 ADR · <code>docs/c4/</code> — 7 file</td><td>Quyết định kiến trúc, luật AW-1…AW-9</td><td>ADR ghi <i>quyết định</i>, không ghi <i>trạng thái triển khai</i></td></tr>
+<tr><td><code>docs/agentworks/</code> — 7 file · <code>DECISIONS.md</code></td><td>Kế hoạch runtime, nợ N-1…N-7, ẩn số M-1…M-7</td><td>Kế hoạch, không phải hiện trạng</td></tr>
+</tbody></table></div>
+
+<h4>Ba giới hạn của chính trang này</h4>
+<ul>
+  <li><b>Nó là lớp trình bày, không phải nguồn sự thật.</b> Nguồn sự thật là
+    <code>docs/WHITEPAPER.md</code> và các script trong <code>scripts/</code>. Nếu trang này và hai nơi
+    đó khác nhau, <b>trang này sai</b>.</li>
+  <li><b>Mọi con số hết hạn ngay khi có một commit.</b> Trang này đo tại <code>2d24b47</code>, ngày
+    2026-11-09. Repo này đã đổi số LOC hai lần trong hai ngày.</li>
+  <li><b>Không có sơ đồ.</b> Bản Markdown trong repo có <b>28 khối Mermaid</b> trên 9 file và chúng
+    parse được; trang HTML này cố ý không nhúng lại chúng, vì một bản vẽ lại bằng tay là một nguồn
+    sự thật thứ hai. Muốn xem sơ đồ, đọc <code>docs/c4/</code> và <code>docs/agentworks/</code>.</li>
+</ul>
+</section>
+
+</div><!-- /wrap -->
+
+<footer>
+  <div class="wrap">
+    <p><b>Atlas 9Link 5W1H</b> — lớp trình bày tương tác của <code>docs/WHITEPAPER.md</code>.
+    Đo tại SHA <code>2d24b47</code>, ngày 2026-11-09.</p>
+    <p class="small">Một file HTML, không CDN, không font ngoài, không build step — chạy offline được,
+    vì một tài liệu dẫn nguồn bằng SHA mà phụ thuộc một dịch vụ bên thứ ba thì không tái lập được.
+    Nhãn độ tin cậy, log sửa lỗi công khai và các ô trống có lý do là ba thứ tài liệu này cố ý giữ
+    lại từ tài liệu tham chiếu mà nó mô phỏng.</p>
+    <p class="small">9Link Core là AGPL-3.0; thư mục <code>ee/</code> là thương mại theo
+    <code>ee/LICENSE</code> (carve-out ở dòng 21–22 của <code>LICENSE</code>).</p>
+  </div>
+</footer>
+
+<script>
+/* ── chủ đề ── */
+(function(){
+  var b=document.getElementById('theme');
+  function set(t){document.documentElement.setAttribute('data-theme',t);
+    b.textContent=t==='dark'?'Nền sáng':'Nền tối';}
+  b.addEventListener('click',function(){
+    set(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');});
+})();
+
+/* ── thanh tiến trình đọc + đánh dấu phần đang xem ── */
+(function(){
+  var p=document.getElementById('prog');
+  var links=[].slice.call(document.querySelectorAll('#pnav a'));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+  function up(){
+    var h=document.documentElement.scrollHeight-window.innerHeight;
+    p.style.width=(h>0?(window.scrollY/h*100):0)+'%';
+    var y=window.scrollY+140,cur=-1;
+    secs.forEach(function(s,i){if(s&&s.offsetTop<=y)cur=i;});
+    links.forEach(function(a,i){a.setAttribute('aria-current',i===cur?'true':'false');});
+  }
+  window.addEventListener('scroll',up,{passive:true});
+  window.addEventListener('resize',up);up();
+})();
+
+/* ── bảng 18 chiều: sắp xếp + lọc ── */
+(function(){
+  var t=document.getElementById('dims-t');if(!t)return;
+  var tb=t.tBodies[0],rows=[].slice.call(tb.rows),count=document.getElementById('dcount');
+  function show(n){count.textContent='hiện '+n+' / '+rows.length+' chiều';}
+  show(rows.length);
+  document.querySelectorAll('.fchip').forEach(function(c){
+    c.addEventListener('click',function(){
+      document.querySelectorAll('.fchip').forEach(function(x){x.setAttribute('aria-pressed','false');});
+      c.setAttribute('aria-pressed','true');
+      var f=c.getAttribute('data-f'),n=0;
+      rows.forEach(function(r){
+        var ok=(f==='all')||(r.getAttribute('data-t')===f);
+        r.style.display=ok?'':'none';if(ok)n++;});
+      show(n);
+    });
+  });
+  t.querySelectorAll('th[data-sort]').forEach(function(th){
+    th.setAttribute('scope','col');
+    th.addEventListener('click',function(){
+      var i=+th.getAttribute('data-sort');
+      var dir=th.getAttribute('aria-sort')==='ascending'?'descending':'ascending';
+      t.querySelectorAll('th').forEach(function(x){x.removeAttribute('aria-sort');});
+      th.setAttribute('aria-sort',dir);
+      var rs=rows.slice().sort(function(a,b){
+        var x=a.cells[i].textContent.trim(),y=b.cells[i].textContent.trim();
+        var nx=parseFloat(x.replace(/[^\d.,-]/g,'').replace(/\./g,'').replace(',','.'));
+        var ny=parseFloat(y.replace(/[^\d.,-]/g,'').replace(/\./g,'').replace(',','.'));
+        var r=(isFinite(nx)&&isFinite(ny))?nx-ny:x.localeCompare(y,'vi');
+        return dir==='ascending'?r:-r;});
+      rs.forEach(function(r){tb.appendChild(r);});
+    });
+  });
+})();
+
+/* ── mô hình kinh tế cổng quảng cáo ── */
+(function(){
+  var ids=['imp','cpm','keep','thr'];
+  var el={},out={};
+  ids.forEach(function(k){el[k]=document.getElementById('s-'+k);out[k]=document.getElementById('o-'+k);});
+  var rG=document.getElementById('r-gross'),rO=document.getElementById('r-owner'),
+      rP=document.getElementById('r-plat'),rE=document.getElementById('r-elig'),
+      note=document.getElementById('simnote'),row=document.querySelector('#simtbl tbody tr');
+  if(!el.imp)return;
+  function fmt(n,d){return n.toLocaleString('vi-VN',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});}
+  function calc(){
+    var imp=+el.imp.value,cpm=+el.cpm.value,keep=+el.keep.value/100,thr=+el.thr.value;
+    out.imp.textContent=fmt(imp);out.cpm.textContent=fmt(cpm);
+    out.keep.textContent=el.keep.value+'%';out.thr.textContent=fmt(thr);
+    var gross=imp*cpm/1000/100;          /* CPM là minor units / 1000 lượt */
+    var owner=gross*(1-keep),plat=gross*keep,ownerMinor=owner*100;
+    var elig=ownerMinor>=thr&&ownerMinor>0;
+    rG.textContent=fmt(gross,2);rO.textContent=fmt(owner,2);rP.textContent=fmt(plat,2);
+    rE.textContent=elig?'CÓ':'chưa';
+    rE.style.color=elig?'var(--ok)':'var(--na)';
+    var c=row.cells;
+    c[0].textContent=fmt(imp);c[1].textContent=fmt(cpm);c[2].textContent=el.keep.value+'%';
+    c[3].textContent=fmt(gross,2);c[4].textContent=fmt(owner,2);
+    c[5].textContent=fmt(plat,2);c[6].textContent=fmt(thr);c[7].textContent=elig?'CÓ':'chưa';
+    var msg=[];
+    if(cpm===0)msg.push('CPM = 0 nghĩa là <b>không trả cho lưu lượng đó</b> — đây là một giá trị hợp lệ trong bảng giá, không phải lỗi.');
+    if(!elig&&ownerMinor>0)msg.push('Chủ link đã có tiền nhưng <b>chưa qua ngưỡng</b> ('+fmt(ownerMinor)+' / '+fmt(thr)+' minor) ⇒ chưa mở khoá lệnh rút.');
+    if(keep===0)msg.push('Giữ lại 0% ⇒ nền tảng không có doanh thu từ cổng; khi đó mô hình chỉ còn take-rate affiliate và giấy phép <code>/ee</code>.');
+    if(el.keep.value!==''&&+el.keep.value>0)msg.push('Tỉ lệ giữ lại <b>'+el.keep.value+'%</b> là giả định của bạn — chưa một con người nào cấp giá trị này vào hệ.');
+    note.innerHTML=msg.length?msg.join(' '):'';
+  }
+  ids.forEach(function(k){el[k].addEventListener('input',calc);});
+  calc();
+})();
+
+/* ── quiz ── */
+(function(){
+  var Q=[
+   {q:'Bảng <code>ad_rate_cards</code> trên production có 0 hàng. Hệ hành xử thế nào?',
+    a:['Cổng quảng cáo dùng CPM mặc định 150','<code>currentRates() == null</code> ⇒ cổng không bật cho link mới, không dòng sổ nào','Hệ báo lỗi cấu hình lúc boot','Cổng bật nhưng ghi sổ với giá trị 0'],k:1,
+    w:'Đây là <b>chiều fail đúng</b>: thiếu cấu hình thì không hứa tiền với ai. CPM 150 chỉ là <i>bảng tham chiếu chờ kích hoạt</i>, chưa được cấp — nếu hệ tự rơi về nó thì một operator quên cấu hình sẽ âm thầm tạo ra nghĩa vụ trả tiền.'},
+   {q:'<code>beatAt === null</code> trong <code>job-beat-judge.ts</code> nghĩa là gì?',
+    a:['Job đã chết — trả <code>down</code>','Job chưa có nghĩa vụ đập — trả <code>ok</code>','Job đang khởi động — chờ 60 giây rồi kết luận','Không xác định — cần một lượt beat để biết'],k:1,
+    w:'Trả <code>ok</code> kèm "chưa có nghĩa vụ". Nhờ vậy một bản self-host <b>không bật profile</b> thì readiness vẫn xanh miễn phí — nếu trả <code>down</code> thì mọi bản OSS chưa bật AgentWorks sẽ tự báo động sai.'},
+   {q:'Tỉ lệ test/mã: white paper khai ≈0,47, bộ đo cho 0,59. Điều gì đúng?',
+    a:['Bộ đo sai vì thiếu một mẫu đường dẫn','White paper đã cũ và cần sửa','Cả hai đúng — hai mẫu số khác nhau','Cần lấy trung bình hai số'],k:2,
+    w:'50.703 ÷ 108.685 (src+e2e, chỉ .ts/.tsx) = 0,466 và 50.703 ÷ 85.998 (src mọi phần mở rộng) = 0,590. <b>Một tỉ lệ không kèm định nghĩa mẫu số là một con số vô nghĩa</b> — và đây là chỗ dễ buộc tội sai tài liệu nhất.'},
+   {q:'Không phân giải được vùng dữ liệu của một yêu cầu, hệ làm gì?',
+    a:['Ghi vào cụm mặc định rồi gắn nhãn để đối soát sau','Từ chối ghi (fail-closed)','Ghi vào cụm gần nhất theo địa lý IP','Hàng đợi chờ phân giải lại'],k:1,
+    w:'<b>Từ chối ghi.</b> Một lần rơi về mặc định là một lần dữ liệu rời khỏi khu vực pháp lý đã hứa với khách, và nó rời đi <i>im lặng</i>. Fail-closed đắt hơn về khả dụng và rẻ hơn nhiều về niềm tin.'},
+   {q:'Vì sao claim rút tiền dùng CAS theo <b>rowcount</b> mà không theo số dư?',
+    a:['Rowcount nhanh hơn một lệnh đọc số dư','Đọc số dư rồi ghi là một cuộc đua; số dòng đã đổi thì không','Vì số dư không được lưu ở dạng nguyên tử','Để tránh làm tròn số thực'],k:1,
+    w:'Sai ở đây là <b>trả tiền hai lần</b>. Một lệnh <code>UPDATE … WHERE</code> trả về số dòng thực sự đã đổi, nên hai yêu cầu đồng thời thì chỉ một thắng — không cần khoá, không cần đọc trước.'},
+   {q:'<code>grep -c</code> trên khối <code>services:</code> của <code>deploy/docker-compose.yml</code> cho ra bao nhiêu, và đúng là bao nhiêu?',
+    a:['11 và 11','6 và 6','11 và 6','6 và 9'],k:2,
+    w:'grep theo mẫu thụt lề cho <b>11</b>; parse theo khối cho <b>6</b>. Chênh 5 — đủ để một bảng so sánh 9 repo thành vô nghĩa. Định nghĩa ở đây là parse, và nó nằm trong <code>repo-measure.mjs</code>.'},
+   {q:'Cơ chế chuyển giữa bản OSS và bản doanh nghiệp dựa vào đâu?',
+    a:['Biến môi trường <code>EE_ENABLED</code>','File <code>ee/entry.ts</code> có tồn tại trên đĩa hay không','Cờ build trong <code>turbo.json</code>','Một hàng trong bảng cấu hình'],k:1,
+    w:'<code>next.config.mjs</code> đổi <code>@/lib/ee-entry</code> thành <code>ee/entry.ts</code> <b>nếu file tồn tại</b>. Hệ quả: ranh giới kiểm được bằng <code>ls</code>, và một bản build OSS không thể vô tình bật tính năng doanh nghiệp vì ai đó quên unset một biến.'},
+   {q:'Cả ba van chống lạm dụng đang tắt. Vì sao?',
+    a:['Chưa viết xong cơ chế','Chờ lưu lượng thật để đặt ngưỡng — bật sớm là đổi rủi ro đã hiểu lấy rủi ro chưa đo','Chúng chỉ dành cho bản <code>/ee</code>','Đã bật nhưng cấu hình ghi là tắt'],k:1,
+    w:'Bật <code>CONVERT_WS_ENFORCE</code> khi chưa tách được lưu lượng tấn công khỏi của khách là đổi lỗ "doanh thu bịa" lấy lỗ <b>"xoá doanh thu thật"</b> — tệ hơn. Cho cầu dao instance quyền chặn là đặt công tắc tắt doanh thu toàn nền tảng vào tay kẻ farm.'},
+   {q:'Độ sống của một repo trong tài liệu này đo bằng gì?',
+    a:['Số sao','Số commit trong 90 ngày','Ngày push gần nhất','Số issue đang mở'],k:1,
+    w:'<b>Commit trong 90 ngày.</b> Trong chính khảo sát của repo, <code>MetaGPT</code> có 71.215 sao và <b>0</b> commit/90 ngày — nên ADR 0048 đã bác việc dùng nó làm topology. Sao là di sản của một quyết định cũ.'},
+   {q:'Một repo trả <b>403</b>, một repo không tồn tại trả <b>404</b>. 403 nghĩa là gì?',
+    a:['Repo đã bị xoá','Repo tồn tại nhưng nằm ngoài phạm vi token','Mạng hoặc proxy đang hỏng','Repo public nhưng bị giới hạn tốc độ'],k:1,
+    w:'403 = <b>tồn tại, ngoài phạm vi</b>. Nhưng kết luận đó chỉ vững khi có <i>đối chứng trong cùng một lượt</i>: 404 cho repo không tồn tại, 200 cho repo public, 200 kèm <code>push=true</code> cho repo trong phạm vi.'},
+   {q:'Vì sao tick thêm repo trong Settings vẫn ra 403?',
+    a:['Cần chờ vài phút để đồng bộ','Token đã cấp mang danh sách repo chốt tại lúc cấp — phải cấp lại token','Quyền đọc cần approval riêng của GitHub','Repo đó chưa bật GitHub App'],k:1,
+    w:'Installation token sống khoảng 1 giờ và mang <b>danh sách chốt lúc cấp</b>. Tick thêm không làm một token <i>đã cấp</i> rộng ra. Tiêu chí "đã thông" là một lệnh trả về <b>tên nhánh</b>, không phải dấu tick trên trang Settings.'},
+   {q:'<code>ad_network_revenue</code> trả <code>insufficient</code> cho mọi ngày. Đó là gì?',
+    a:['Một lỗi chưa sửa','Hệ từ chối kết luận lãi/lỗ khi chưa có báo cáo thật','Bảng chưa được tạo','Một trạng thái chờ đồng bộ'],k:1,
+    w:'<b>Hệ được phép nói "tôi không biết".</b> Đó là lý do một bảng đối soát ở đây có trạng thái thứ ba ngoài "khớp" và "lệch" — và vì sao tài liệu này không có con số doanh thu nào, chỉ có mô hình.'}
+  ];
+  var box=document.getElementById('quizbox'),sc=document.getElementById('qscore'),right=0,done=0;
+  Q.forEach(function(item,i){
+    var d=document.createElement('div');d.className='qq';
+    var t=document.createElement('div');t.className='qt';t.textContent=(i+1)+'. ';
+    t.insertAdjacentHTML('beforeend',item.q);d.appendChild(t);
+    var o=document.createElement('div');o.className='opts';
+    item.a.forEach(function(txt,j){
+      var b=document.createElement('button');b.type='button';b.innerHTML=txt;
+      b.addEventListener('click',function(){
+        if(d.dataset.done)return;d.dataset.done='1';done++;
+        [].forEach.call(o.children,function(x){x.disabled=true;});
+        if(j===item.k){b.classList.add('right');right++;}
+        else{b.classList.add('wrong');o.children[item.k].classList.add('right');}
+        var w=document.createElement('div');w.className='why show';
+        w.innerHTML='<b>'+(j===item.k?'Đúng.':'Chưa đúng.')+'</b> '+item.w;
+        d.appendChild(w);
+        sc.textContent='Đã trả lời '+done+'/'+Q.length+' · đúng '+right+
+          (done===Q.length
+            ? (right>=10?' — bạn đọc đúng các nhãn.'
+               :right>=6?' — khá; nên đọc lại Phần IV.'
+               :' — nên đọc lại Phần II và Phần IV.')
+            : '');
+        });
+      o.appendChild(b);
+    });
+    d.appendChild(o);box.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>

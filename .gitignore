@@ -1,0 +1,4 @@
+# thư mục artifact của `.github/workflows/deploy.yml` (bản sao của index.html + SOURCE.json trước
+# khi upload). Là BẢN SAO THỨ HAI của trang, mà hai bản sao thì có hai chỗ để chúng lệch nhau —
+# workflow đã có phép so md5 để bắt đúng chuyện đó, nhưng đừng tạo ra bản sao ngay từ đầu.
+_site/

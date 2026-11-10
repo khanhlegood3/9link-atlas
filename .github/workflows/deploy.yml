@@ -1,0 +1,161 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# File này SỐNG Ở REPO CÔNG KHAI, tại `.github/workflows/deploy.yml`.
+# Trong repo 9Link nó nằm ở `publish/atlas-site/.github/workflows/deploy.yml` — tức là KHÔNG nằm
+# trong `.github/workflows/` ở gốc, nên GitHub KHÔNG chạy nó ở đây. Đó là chủ đích: một workflow
+# nằm sai chỗ thì bất hoạt, và `scripts/publish-atlas.sh` chép nó sang đúng chỗ khi xuất bản.
+#
+# ── VÌ SAO Ở ĐÂY KHÔNG CÓ CỔNG, KHÔNG CÓ NODE, KHÔNG CÓ jsdom ──────────────
+# Trang này là BẢN SAO. Bản gốc (`docs/atlas/index.html` trong repo private 9Link) đã được cổng
+# `scripts/check-atlas.mjs` kiểm — các phép kiểm tĩnh + động, dựng trang bằng jsdom rồi bấm thật từng
+# widget — trước khi `scripts/publish-atlas.sh` chịu ghi `SOURCE.json`. Số phép kiểm và số đột biến
+# self-test CỐ TÌNH không ghi ở đây: chúng là con số đo được, mà con số chép tay cạnh một con số đo
+# được thì trôi (repo gốc đã trả giá cho việc đó ba lần). Con số THẬT nằm trong `SOURCE.json.gate`.
+# Nên phép kiểm ở đây chỉ là MỘT dòng so md5, và đó là chủ đích:
+#   md5(index.html) == SOURCE.json.page_md5   ⇒   bytes này LÀ bytes đã qua cổng.
+# Suy ra bắc cầu. Cài lại cổng ở đây thì sẽ có HAI định nghĩa của cùng một phép kiểm, và hai định
+# nghĩa thì sớm muộn cũng cãi nhau (repo gốc đã trả giá cho bài học đó: cùng một repo ra 46/47/71
+# "cổng" tuỳ phạm vi đếm). Một định nghĩa, đặt ở nơi nó thuộc về, và một con tem để suy ra.
+#
+# ── plumbing giữ nguyên từ `deploy.yml` mẫu ─────────────────────────────────
+# `permissions` · `concurrency: pages` với `cancel-in-progress: false` · `upload-pages-artifact@v3`
+# · `deploy-pages@v4` · guard `if: github.ref == 'refs/heads/main'` · `environment: github-pages`.
+# Khác mẫu ở chỗ KHÔNG có `npm ci` / `npm run build` / `path: ./out`: repo này không có gì để dựng.
+# Trang là một file HTML tự chứa — 0 `<link>`, 0 `<img>`, 0 `@import`, không CDN, không font ngoài,
+# và mọi liên kết đều là neo `href="#…"`. Vì tự chứa nên cũng KHÔNG cần `base`: một app Vite phải
+# đặt `base: '/9link-atlas/'` vì nó phát ra URL tài sản tuyệt đối; trang này không phát ra URL nào,
+# nên nó chạy y nguyên ở gốc hay ở bất kỳ base path nào.
+# ═══════════════════════════════════════════════════════════════════════════
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Một lần deploy chưa xong mà có push mới thì KHÔNG huỷ giữa chừng: huỷ một lần deploy đang ghi có
+# thể để lại artifact nửa vời, tức một trang không phải bản cũ cũng không phải bản mới.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Kiểm toàn vẹn — bytes ở đây phải đúng bản đã qua cổng ở 9Link
+        run: |
+          set -euo pipefail
+          for f in index.html SOURCE.json; do
+            if [ ! -f "$f" ]; then
+              echo "::error::thiếu $f — repo này phải do scripts/publish-atlas.sh (trong 9Link) sinh ra, không sửa tay."
+              exit 1
+            fi
+          done
+          # Đọc md5 từ SOURCE.json bằng grep, không cần jq: định dạng file đó do script xuất bản
+          # ghi ra và được giữ cố định (mỗi khoá một dòng) CHÍNH XÁC để phép đọc này đáng tin.
+          want=$(grep -o '"page_md5"[[:space:]]*:[[:space:]]*"[0-9a-f]\{32\}"' SOURCE.json | grep -o '[0-9a-f]\{32\}')
+          got=$(md5sum index.html | cut -d' ' -f1)
+          bytes=$(wc -c < index.html)
+          echo "SOURCE.json.page_md5 : ${want:-KHÔNG ĐỌC ĐƯỢC}"
+          echo "md5(index.html)      : ${got}"
+          echo "bytes                : ${bytes}"
+          if [ -z "${want:-}" ]; then
+            echo "::error::SOURCE.json không có khoá page_md5 đúng dạng 32 ký tự hex."
+            exit 1
+          fi
+          if [ "$want" != "$got" ]; then
+            echo "::error::index.html KHÁC bản đã qua cổng. SOURCE.json chỉ được ghi sau khi cổng thoát 0, nên lệch ở đây nghĩa là có ai sửa trang bằng tay sau khi xuất bản. Đừng sửa md5 trong SOURCE.json cho khớp — hãy xuất bản lại từ 9Link."
+            exit 1
+          fi
+          echo "✅ khớp: bytes đang ở đây là bytes đã qua cổng ở 9Link"
+          grep -o '"source_sha"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed 's/^/  nguồn: /'
+          grep -o '"published_at"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed 's/^/  /'
+
+      - name: Dựng artifact
+        run: |
+          set -euo pipefail
+          rm -rf _site
+          mkdir -p _site
+          # SOURCE.json đi kèm để máy đọc được nguồn gốc ở một URL cố định:
+          #   https://khanhlegood3.github.io/9link-atlas/SOURCE.json
+          cp index.html SOURCE.json _site/
+          cmp index.html _site/index.html
+          ls -la _site
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Deploy BÁO thành công nghĩa là API đã nhận artifact — không nghĩa là URL đang phục vụ đúng bytes.
+  # Job này tải trang ĐÃ ĐĂNG về và so lại md5 với SOURCE.json. Ba kết cục phân biệt rõ:
+  #   200 + khớp md5      ⇒ ✅ xác minh đạt
+  #   200 + lệch md5      ⇒ ❌ ĐỎ (CDN còn bản cũ, hoặc artifact bị lệch) — in cả hai md5
+  #   không bao giờ 200   ⇒ ⚠️ bỏ qua CÓ LÝ DO, không tô xanh giả
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Tải trang đã đăng và so lại md5
+        env:
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PAGE_URL}" ]; then echo "::error::không nhận được page_url từ job deploy"; exit 1; fi
+          echo "Trang đã đăng: ${PAGE_URL}"
+          # Số lần thử định nghĩa MỘT lần; thông báo suy ra từ biến, không chép lại con số.
+          TRIES=9; WAIT=10
+          want=$(grep -o '"page_md5"[[:space:]]*:[[:space:]]*"[0-9a-f]\{32\}"' SOURCE.json | grep -o '[0-9a-f]\{32\}')
+          out=/tmp/trang-da-dang.html
+          code=000; ok=no
+          for i in $(seq 1 "$TRIES"); do
+            code=$(curl -s -o "$out" -w '%{http_code}' -L "${PAGE_URL}" || true)
+            code=${code:-000}
+            if [ "$code" = "200" ]; then
+              got=$(md5sum "$out" | cut -d' ' -f1)
+              if [ "$got" = "$want" ]; then ok=yes; break; fi
+              echo "  lần ${i}: HTTP 200 nhưng md5 ${got} ≠ ${want} (CDN còn bản cũ?) — chờ rồi thử lại"
+            else
+              echo "  lần ${i}: HTTP ${code}"
+            fi
+            sleep "$WAIT"
+          done
+          if [ "$ok" = "yes" ]; then
+            echo "✅ HTTP 200 · md5 khớp SOURCE.json · $(wc -c < "$out") bytes"
+            echo "   ${PAGE_URL} đang phục vụ đúng bản đã qua cổng."
+            exit 0
+          fi
+          if [ "$code" = "200" ]; then
+            echo "::error::Trang tại ${PAGE_URL} LỆCH bản trong repo sau ${TRIES} lần thử / ~$((TRIES*WAIT)) s."
+            echo "  md5 tải về   : $(md5sum "$out" | cut -d' ' -f1)"
+            echo "  SOURCE.json  : ${want}"
+            exit 1
+          fi
+          echo "::warning::KHÔNG XÁC MINH ĐƯỢC từ runner (HTTP ${code} sau ~$((TRIES*WAIT)) s). Deploy đã thành công theo API; thường gặp khi Pages vừa bật nên CDN chưa có. Mở ${PAGE_URL} trong trình duyệt để kiểm bằng mắt."
+          exit 0

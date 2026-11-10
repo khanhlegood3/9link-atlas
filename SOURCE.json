@@ -1,0 +1,11 @@
+{
+  "source_repo": "khanhlegood3/9Link",
+  "source_sha": "00d6e594c3d1f5c8e31a170a507fb5be20ea0303",
+  "source_path": "docs/atlas/index.html",
+  "published_at": "2026-11-10T06:10:16Z",
+  "page_md5": "27d76f38c9ff77c871a8e9210dc1bf99",
+  "page_bytes": 136079,
+  "data_sha": "2d24b47",
+  "gate": "scripts/check-atlas.mjs exit 0 · self-test 12/12 đột biến ĐỎ được · file gốc sạch (35 phép kiểm đạt) — tất cả chạy TRƯỚC khi file này được ghi",
+  "note": "source_sha = cây của FILE TRANG. data_sha = cây mà SỐ LIỆU trong trang được đo. Hai cây khác nhau, đừng gộp."
+}
