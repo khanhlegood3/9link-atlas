@@ -7,6 +7,10 @@ Kèm theo là **bộ mô hình C4** của cùng hệ thống đó, ở [`c4/`](c
 Mermaid. Đọc C4 qua **blob view của GitHub** ([`c4/`](c4/) → mở từng file) thì sơ đồ được render;
 qua Pages thì chỉ có markdown thô.
 
+Kèm theo nữa là **white paper bản công khai**, ở [`WHITEPAPER.md`](WHITEPAPER.md) — **bản đã lược**,
+không phải bản gốc; xem mục riêng bên dưới, vì "đã lược" mà không nói lược cái gì thì cũng là một
+cách nói dối.
+
 Trang trình bày lại các tuyên bố trong white paper của **9Link** — một nền tảng "All in One for
 Link" mã nguồn mở — dưới dạng 6 thẻ 5W1H → 5 phần → 18 chiều đo → mô hình kinh tế quảng cáo có
 thanh trượt → quiz 12 câu, kèm **nhãn độ tin cậy** cho từng con số (`Đã đo` · `Đã viết, chưa chạy`
@@ -25,10 +29,38 @@ Toàn bộ những gì ở đây:
 |---|---|---|
 | `index.html` | trang Atlas — một file HTML tự chứa, CSS/JS nội tuyến, 0 tài nguyên ngoài. Số byte và md5 xem `SOURCE.json` | `scripts/check-atlas.mjs` |
 | `c4/*.md` | bộ mô hình C4 (7 file): System Context · Container · Component · Code · Dynamic views · Deployment · README | `scripts/check-vn-docs.mjs` |
+| `WHITEPAPER.md` | **BẢN CÔNG KHAI, đã lược**, của white paper tiếng Việt — xem mục riêng bên dưới | `scripts/redact-whitepaper.mjs` |
 | `SOURCE.json` | **nguồn gốc của đúng bytes đang nằm ở đây** — đọc mục dưới | — |
 | `README.md` | file này | — |
-| `.github/workflows/deploy.yml` | đăng lên GitHub Pages, sau khi kiểm toàn vẹn cả trang lẫn bộ C4 | — |
+| `.github/workflows/deploy.yml` | đăng lên GitHub Pages, sau khi kiểm toàn vẹn cả trang, bộ C4 lẫn white paper | — |
 | `.gitignore` | bỏ qua `_site/` (thư mục artifact của workflow) | — |
+
+### ⚠️ `WHITEPAPER.md` ở đây là BẢN LƯỢC — và đây là đúng những gì bị lược
+
+Bản đầy đủ nằm trong repo private. File ở đây là **hàm của bản gốc**, sinh bằng
+`scripts/redact-whitepaper.mjs`, chứ không phải một bản chép tay: một cặp marker trong nguồn quyết
+định vùng bị cắt, và chạy lại bao nhiêu lần cũng ra đúng một bytes. Hai loại biến đổi, cả hai đều có
+cổng gác:
+
+| Biến đổi | Vì sao |
+|---|---|
+| **Cắt §12.2 và §12.3** | Hai mục đó kê chi tiết vận hành và **hai lỗ hổng còn đang mở trên production**: một vector đốt biên bằng cách xoay header proxy, và một van chống lạm dụng đang ở chế độ *đo mà không chặn*. Công bố nguyên văn là chỉ chỗ cho kẻ tấn công. Chỗ cắt có một dòng nói rõ **lý do**, và lý do đó lấy từ marker trong nguồn chứ không viết lại ở đây |
+| **Bẻ 28 link tương đối thành code span** | Bản gốc trỏ tới `docs/…` trong repo private. Ở repo này thì gần hết là **href chết** — đích chỉ có `index.html` · `README.md` · `SOURCE.json` · `WHITEPAPER.md` · `c4/*.md`. Đường dẫn vẫn còn đó dưới dạng chữ để truy vết, nhưng không còn cú bấm nào dẫn tới 404. Ngoại lệ duy nhất: link vào `c4/` **được giữ**, và chỉ giữ khi file đó **thật sự có** trong bộ C4 |
+
+Cổng kiểm **cả hai chiều**, và chiều thứ hai mới là chiều đáng kể: chuỗi CẤM phải **vắng**, và chuỗi
+phải **GIỮ** phải còn. Chỉ có danh sách CẤM thì một bộ lược "xoá sạch cả tài liệu" sẽ đạt tuyệt đối.
+Ngoài ra: lược là **xoá** chứ không viết lại (kiểm bằng dãy con giữ thứ tự) · **câm là lỗi** (không
+tìm thấy marker nào ⇒ đỏ, vì một bộ lược không lược gì trông y hệt bộ lược đang chạy đúng) · và
+**idempotent**.
+
+> ⚠️ **Một sự không nhất quán, nói thẳng thay vì để bạn tự phát hiện.** Phép lược này **không** làm
+> cho hai lỗ hổng kể trên trở thành bí mật. `index.html` — trang chính của repo này, công khai từ
+> trước — **chép lại nguyên văn đúng hai lỗ hổng đó**, kèm cả phép đo, vì white paper gốc ghi chúng và
+> doctrine của trang là *"không thêm cũng không bớt tuyên bố nào"*. Xem mục *"Trang này nói gì về
+> những thứ chưa chạy được"* bên dưới. Vậy nên việc lược white paper có tác dụng **hẹp hơn** tiêu đề
+> của nó: nó ngăn một bản sao công khai **thứ hai** ra đời, chứ không đóng lỗ đó. Quyết định công bố
+> trang Atlas là của chủ dự án và đã được ghi nhận là có ý thức; việc có lược **cả** trang hay không
+> là một quyết định còn treo, ghi ở §12.7 của white paper bản đầy đủ.
 
 ### ⚠️ Bộ C4 là một ẢNH CHỤP CÓ NGÀY, không phải hiện trạng
 
@@ -59,7 +91,13 @@ Trang này là **bản sao**, và một bản sao không tự nói được nó 
   "c4_files":       "<số file .md trong c4/>",
   "c4_bytes":       "<tổng số byte của chúng>",
   "c4_manifest":    "01-system-context.md=<md5> 02-container.md=<md5> … — MỘT dòng, mỗi cặp tên=md5",
-  "content_md5":    "danh tính của CẢ lần xuất bản: md5 của page_md5 + c4_manifest",
+  "wp_source_path": "docs/WHITEPAPER.md — bản ĐẦY ĐỦ, trong repo private",
+  "wp_file":        "WHITEPAPER.md — bản CÔNG KHAI, đã lược",
+  "wp_md5":         "md5 của đúng bytes WHITEPAPER.md trong repo này",
+  "wp_bytes":       "<số byte của nó>",
+  "wp_redacted_blocks": "<số khối bị lược — 0 nghĩa là bản 'công khai' chính là bản đầy đủ, và workflow sẽ ĐỎ>",
+  "wp_links_flattened": "<số link tương đối đã bẻ thành code span>",
+  "content_md5":    "danh tính của CẢ lần xuất bản: md5 của page_md5 + c4_manifest + wp_md5",
   "data_sha":       "SHA của cây mà SỐ LIỆU trong trang được đo — KHÁC source_sha",
   "gate":           "các cổng đã chạy và thoát 0 TRƯỚC khi file này được ghi"
 }
@@ -69,21 +107,30 @@ Hai khoá cần giải thích vì chúng dễ nhầm:
 
 - **`content_md5`** là khoá mà phép *idempotent* khoá theo: chạy lại script trên cùng một nội dung thì
   con tem **không bị ghi lại**, nên `published_at` nghĩa là *lần đầu tiên đúng nội dung này được xuất
-  bản*. Nó phải gộp cả `c4_manifest` chứ không chỉ `page_md5` — nếu chỉ khoá theo trang thì "sửa C4
-  mà không sửa trang" sẽ được báo là *nội dung không đổi*, và một con tem không hề khai C4 được giữ
-  nguyên trong khi cây ở đây đã đổi.
+  bản*. Nó phải gộp **mọi** payload: `page_md5` + `c4_manifest` + `wp_md5`. Đây không phải phòng xa —
+  khoá này từng chỉ có `page_md5`, và hậu quả đo được là "sửa C4 mà không sửa trang" được báo là
+  *nội dung không đổi* trong khi cây ở đây đã đổi (vá ở PR #15). Thêm payload thứ ba mà không đưa nó
+  vào khoá là dựng lại đúng lỗi đó, chỉ khác vật liệu: lần này là *"sửa white paper mà không sửa
+  trang"* thì repo công khai sẽ không bao giờ nhận bản lược mới, và script vẫn in ra chữ "không đổi"
+  một cách tự tin.
+- **`wp_redacted_blocks`** tồn tại vì `wp_md5` **không** chứng minh được bản này đã lược. md5 chỉ nói
+  "đúng bytes đã qua cổng"; nếu marker trong nguồn bị xoá mà cổng bên kia vẫn xanh vì một lý do nào
+  đó, thì một bản **ĐẦY ĐỦ** sẽ nằm ở đây và md5 vẫn khớp — khớp với chính bản đầy đủ đó. Nên
+  workflow ở repo này kiểm thêm hai vế độc lập: số khối lược **≥ 1**, và tiêu đề §12.2/§12.3 **thật sự
+  vắng mặt** trong file.
 - **`c4_manifest`** cố tình là MỘT dòng gồm các cặp `tên=md5`, không phải một mảng JSON: workflow ở
   repo này đọc `SOURCE.json` bằng `grep` + vòng lặp bash chứ không bằng `jq`, và định dạng được giữ
   cố định CHÍNH XÁC để phép đọc đó đáng tin. Đổi định dạng ở đây thì phải đổi phép đọc ở đó, trong
   cùng một commit.
 
-`scripts/publish-atlas.sh` (nằm trong repo 9Link, không nằm ở đây) **chỉ ghi `SOURCE.json` sau khi
-CẢ HAI cổng thoát 0**: `check-atlas.mjs` trên trang và `check-vn-docs.mjs` trên `docs/c4/`. Vì vậy
-workflow ở repo này không cần cài lại cổng nào, cũng không cần định nghĩa lại một phép kiểm nào:
-nó chỉ việc so `md5(index.html)` với `page_md5`, và `md5(c4/<file>)` với từng cặp trong
-`c4_manifest` — kể cả đếm ngược, để một file C4 **mồ côi** (có trên đĩa mà tem không khai) không
-lọt qua. Nếu khớp thì bytes đang được đăng **là** bytes đã qua cổng — suy ra bắc cầu, một định
-nghĩa, không bản sao thứ hai của định nghĩa đó.
+`scripts/publish-atlas.sh` (nằm trong repo 9Link, không nằm ở đây) **chỉ ghi `SOURCE.json` sau khi CẢ
+BA cổng thoát 0**: `check-atlas.mjs` trên trang, `check-vn-docs.mjs` trên `docs/c4/`, và
+`redact-whitepaper.mjs` trên white paper. Vì vậy workflow ở repo này không cần cài lại cổng nào, cũng
+không cần định nghĩa lại một phép kiểm nào: nó chỉ việc so `md5(index.html)` với `page_md5`,
+`md5(c4/<file>)` với từng cặp trong `c4_manifest` — kể cả đếm ngược, để một file C4 **mồ côi** (có
+trên đĩa mà tem không khai) không lọt qua — và `md5(WHITEPAPER.md)` với `wp_md5`. Nếu khớp thì bytes
+đang được đăng **là** bytes đã qua cổng — suy ra bắc cầu, một định nghĩa, không bản sao thứ hai của
+định nghĩa đó.
 
 ## ⚠️ Hai SHA khác nhau, đừng gộp làm một
 
@@ -133,7 +180,8 @@ bash scripts/publish-atlas.sh --check   # chỉ kiểm: cổng xanh? trang đã 
 bash scripts/publish-atlas.sh           # tạo repo nếu chưa có, bật Pages, push
 ```
 
-Script từ chối xuất bản nếu **một trong hai cổng** đỏ, nếu thiếu `jsdom`/`mermaid` (cổng thoát
-3 = *bỏ qua*, và bỏ qua thì không được coi là đạt), hoặc nếu `docs/atlas/index.html` **hay bất kỳ
-file nào trong `docs/c4/`** còn thay đổi chưa commit — vì khi đó `source_sha` sẽ không trỏ tới đúng
-bytes đang được đăng.
+Script từ chối xuất bản nếu **một trong ba cổng** đỏ, nếu thiếu `jsdom`/`mermaid` (cổng thoát
+3 = *bỏ qua*, và bỏ qua thì không được coi là đạt), hoặc nếu `docs/atlas/index.html` · bất kỳ file nào
+trong `docs/c4/` · hay `docs/WHITEPAPER.md` còn thay đổi chưa commit — vì khi đó `source_sha` sẽ
+không trỏ tới đúng bytes đang được đăng. Nó cũng từ chối nếu cổng bản lược xanh mà **0 khối bị lược**:
+một bản "công khai" không cắt gì thì chính là bản đầy đủ.

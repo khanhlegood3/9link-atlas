@@ -13,6 +13,7 @@
 # Nên phép kiểm ở đây chỉ là so md5, và đó là chủ đích:
 #   md5(index.html)      == SOURCE.json.page_md5      ⇒ bytes TRANG này LÀ bytes đã qua GATE-ATLAS.
 #   md5(c4/<file>)       == cặp trong c4_manifest     ⇒ bytes C4  này LÀ bytes đã qua GATE-VNDOC.
+#   md5(WHITEPAPER.md)   == SOURCE.json.wp_md5        ⇒ bytes WHITE PAPER này LÀ bản đã qua cổng lược.
 # Suy ra bắc cầu. Cài lại cổng ở đây thì sẽ có HAI định nghĩa của cùng một phép kiểm, và hai định
 # nghĩa thì sớm muộn cũng cãi nhau (repo gốc đã trả giá cho bài học đó: cùng một repo ra 46/47/71
 # "cổng" tuỳ phạm vi đếm). Một định nghĩa, đặt ở nơi nó thuộc về, và một con tem để suy ra.
@@ -26,6 +27,18 @@
 #   Pages (markdown thô)       : https://khanhlegood3.github.io/9link-atlas/c4/README.md
 # ⚠️ Mọi con số trong `c4/` thuộc cây `b559c68` (2026-09-08) và TỰ KHAI điều đó ở đầu mỗi file.
 #   Chúng không phải hiện trạng của repo gốc — đọc như một ảnh chụp có ngày.
+#
+# ── VÌ SAO CÓ `WHITEPAPER.md`, VÀ VÌ SAO NÓ KHÔNG PHẢI BẢN GỐC ───────────────
+# Repo này chở BẢN CÔNG KHAI của white paper, **đã lược**. Bản đầy đủ nằm trong repo private; hai mục
+# §12.2–§12.3 của nó kê chi tiết vận hành và HAI lỗ hổng còn đang mở trên production (một vector đốt
+# biên bằng cách xoay header proxy, và một van chống lạm dụng đang ở chế độ đo-mà-không-chặn). Công bố
+# nguyên văn là chỉ chỗ cho kẻ tấn công, nên hai mục đó bị cắt.
+# Việc cắt KHÔNG làm bằng tay. Bản ở đây là **hàm của bản gốc**, sinh bằng `scripts/redact-whitepaper.mjs`
+# trong repo 9Link: một cặp marker trong nguồn quyết định vùng bị cắt, mọi link tương đối không sống
+# được ở repo này bị bẻ thành code span (để không có href chết công khai), và một cổng kiểm cả HAI
+# chiều — chuỗi CẤM phải VẮNG, chuỗi phải GIỮ phải CÒN — vì một bộ lược chỉ có danh sách CẤM thì
+# "xoá sạch cả tài liệu" cũng đạt tuyệt đối. Đừng sửa file này bằng tay: sửa tay thì nó không còn truy
+# vết về bản gốc được, và lần xuất bản kế tiếp sẽ ghi đè.
 #
 # ── plumbing giữ nguyên từ `deploy.yml` mẫu ─────────────────────────────────
 # `permissions` · `concurrency: pages` với `cancel-in-progress: false` · `upload-pages-artifact@v3`
@@ -132,6 +145,41 @@ jobs:
             exit 1
           fi
           echo "✅ khớp C4: ${seen}/${want_files} file đúng md5 đã qua GATE-VNDOC ở 9Link, không file mồ côi"
+
+          # ── bản white paper công khai: cùng một phép, đọc từ cùng một con tem ──
+          # Bóc giá trị bằng sed theo ĐÚNG tên khoá, không grep hex trên cả dòng: cùng cái bẫy `c4_files`
+          # ở trên. `|| true` để một con tem THIẾU khoá đi vào nhánh thông báo thân thiện bên dưới thay vì
+          # chết ngang giữa `set -euo pipefail` — "tem thiếu khoá" và "tem sai khoá" là hai phán đoán
+          # khác nhau và phải in ra khác nhau.
+          wp_want=$(grep -o '"wp_md5"[[:space:]]*:[[:space:]]*"[0-9a-f]\{32\}"' SOURCE.json | grep -o '[0-9a-f]\{32\}' || true)
+          wp_file=$(grep -o '"wp_file"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"wp_file"[[:space:]]*:[[:space:]]*"//; s/"$//' || true)
+          if [ -z "${wp_want:-}" ] || [ -z "${wp_file:-}" ]; then
+            echo "::error::SOURCE.json thiếu wp_md5 hoặc wp_file. Repo này do scripts/publish-atlas.sh sinh ra; một con tem thiếu khoá nghĩa là nó được viết bởi một bản script cũ hơn nội dung đang nằm ở đây — tức repo công khai đang chứa một bản white paper KHÔNG được truy vết."
+            exit 1
+          fi
+          if [ ! -f "$wp_file" ]; then
+            echo "::error::tem khai ${wp_file} nhưng file không có ở đây."
+            exit 1
+          fi
+          wp_got=$(md5sum "$wp_file" | cut -d' ' -f1)
+          if [ "$wp_want" != "$wp_got" ]; then
+            echo "::error::${wp_file} KHÁC bản đã qua cổng lược ở 9Link: tem ghi ${wp_want}, file là ${wp_got}. Đừng sửa md5 trong SOURCE.json cho khớp — hãy xuất bản lại từ 9Link."
+            exit 1
+          fi
+          # Vế NGƯỢC CHIỀU, và nó không suy ra được từ md5. md5 chứng minh "đúng bytes đã qua cổng",
+          # KHÔNG chứng minh "bytes đó đã bị lược": nếu marker trong nguồn bị xoá mà cổng bên kia xanh
+          # vì một lý do nào đó, thì một bản ĐẦY ĐỦ sẽ nằm ở đây và md5 vẫn khớp — khớp với chính bản
+          # đầy đủ đó. Hai mệnh đề khác nhau nên cần hai phép kiểm.
+          wp_blocks=$(grep -o '"wp_redacted_blocks"[[:space:]]*:[[:space:]]*[0-9]\+' SOURCE.json | sed -E 's/^"wp_redacted_blocks"[[:space:]]*:[[:space:]]*//' || true)
+          if [ -z "${wp_blocks:-}" ] || [ "$wp_blocks" -lt 1 ]; then
+            echo "::error::tem khai wp_redacted_blocks = ${wp_blocks:-KHÔNG ĐỌC ĐƯỢC}. Bản công khai mà không lược khối nào thì nó CHÍNH LÀ bản đầy đủ — không được đăng."
+            exit 1
+          fi
+          if grep -q '^### 12\.2 Những việc chỉ con người quyết được' "$wp_file" || grep -q '^### 12\.3 Ba cầu dao' "$wp_file"; then
+            echo "::error::${wp_file} còn chứa §12.2 hoặc §12.3 — tem khai đã lược ${wp_blocks} khối nhưng nội dung thì chưa. Đây là bản ĐẦY ĐỦ, không được đăng công khai."
+            exit 1
+          fi
+          echo "✅ khớp WHITE PAPER: ${wp_file} đúng md5 bản đã qua cổng lược · tem khai lược ${wp_blocks} khối · §12.2/§12.3 thật sự vắng mặt"
           grep -o '"source_sha"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed 's/^/  nguồn: /'
           grep -o '"published_at"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed 's/^/  /'
 
@@ -148,6 +196,13 @@ jobs:
           # Ở đây chỉ cần NỘI DUNG nên `cp -r` là đủ; từng file được `cmp` lại ngay sau đó.
           cp -r c4 _site/
           for f in c4/*.md; do cmp "$f" "_site/$f"; done
+          # Bản white paper công khai cũng phải có URL ổn định trên Pages, không chỉ nằm trong repo:
+          #   https://khanhlegood3.github.io/9link-atlas/WHITEPAPER.md
+          # Tên file ĐỌC từ SOURCE.json chứ không gõ cứng ở đây — cùng lý do với mọi con số khác trong
+          # file này: một cái tên chép tay đặt cạnh một cái tên do máy ghi là một bản sao sẽ trôi.
+          wp_file=$(grep -o '"wp_file"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"wp_file"[[:space:]]*:[[:space:]]*"//; s/"$//')
+          cp "$wp_file" _site/
+          cmp "$wp_file" "_site/$wp_file"
           ls -la _site _site/c4
 
       - name: Upload artifact
@@ -182,7 +237,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Tải bản đã đăng và so lại md5 (trang + một file C4)
+      - name: Tải bản đã đăng và so lại md5 (trang + một file C4 + white paper)
         env:
           PAGE_URL: ${{ needs.deploy.outputs.page_url }}
         run: |
@@ -205,6 +260,13 @@ jobs:
                       | grep -oE '(^|[[:space:]])README\.md=[0-9a-f]{32}' | sed -E 's/^.*=//' || true)
           if [ -z "${c4_want:-}" ]; then
             echo "::error::không rút được md5 của c4/README.md từ SOURCE.json.c4_manifest — phép đọc và định dạng đã lệch nhau."
+            exit 1
+          fi
+          # md5 + tên của bản white paper công khai, đọc từ cùng một con tem.
+          wp_want_verify=$(grep -o '"wp_md5"[[:space:]]*:[[:space:]]*"[0-9a-f]\{32\}"' SOURCE.json | grep -o '[0-9a-f]\{32\}' || true)
+          wp_name=$(grep -o '"wp_file"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed -E 's/^"wp_file"[[:space:]]*:[[:space:]]*"//; s/"$//' || true)
+          if [ -z "${wp_want_verify:-}" ] || [ -z "${wp_name:-}" ]; then
+            echo "::error::không rút được wp_md5/wp_file từ SOURCE.json — phép đọc và định dạng đã lệch nhau."
             exit 1
           fi
           # Một hàm, hai đích: định nghĩa "đã xác minh" chỉ có MỘT, áp cho cả trang lẫn file C4.
@@ -238,6 +300,12 @@ jobs:
             if [ "$code" = "200" ]; then fail_hard=yes; else unverifiable=yes; fi
           fi
           if ! check_url "${base}c4/README.md" "$c4_want" "c4/README.md"; then
+            if [ "$code" = "200" ]; then fail_hard=yes; else unverifiable=yes; fi
+          fi
+          # Đích thứ ba. Nó là payload duy nhất KHÔNG phải bản sao nguyên văn của một file trong repo
+          # gốc — nó là bản LƯỢC — nên lập luận "artifact upload nguyên khối, kiểm một file là đủ" ở
+          # trên KHÔNG áp cho nó: một artifact dựng thiếu file này vẫn đủ cả hai md5 kia.
+          if ! check_url "${base}${wp_name}" "$wp_want_verify" "WHITEPAPER.md"; then
             if [ "$code" = "200" ]; then fail_hard=yes; else unverifiable=yes; fi
           fi
           if [ "$fail_hard" = "yes" ]; then
