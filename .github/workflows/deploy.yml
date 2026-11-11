@@ -285,6 +285,102 @@ jobs:
           grep -o '"source_sha"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed 's/^/  nguồn: /'
           grep -o '"published_at"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json | sed 's/^/  /'
 
+      # ── SOÁT TẦNG NGƯỜI SỬA — CHỈ CẢNH BÁO, KHÔNG BAO GIỜ CHẶN DEPLOY ──────────────────────────
+      # VÌ SAO CÓ BƯỚC NÀY. `compare/` có HAI tầng. Tầng MÁY SINH (`survey.json`) có md5 trong
+      # `cmp_manifest` và được bước "Kiểm toàn vẹn" ở trên canh cứng. Tầng NGƯỜI SỬA (`DIFFERENCES.md`
+      # và mọi file .md khác trong `compare/`) cố tình KHÔNG có md5, KHÔNG bị ghi đè, để còn sửa thẳng
+      # trên GitHub được — bước trên in rõ `✅ BỎ QUA (có chủ đích)` cho nó. Cái giá đã chấp nhận của
+      # thiết kế đó: tầng người sửa là văn bản tiếng Việt nằm NGOÀI mọi cổng ngôn ngữ. GATE-VNDOC của
+      # repo nguồn không chạm tới nó vì nó không nằm trong repo nguồn, còn repo này thì không có cổng
+      # tài liệu nào. Link gãy, placeholder chưa điền, một hàng rào code quên đóng — trước lượt này
+      # không ai bắt.
+      #
+      # VÌ SAO CHỈ CẢNH BÁO mà không phải một cổng cứng. Đặt cổng cứng ở đây là biến file con người sửa
+      # thành file bị máy canh — đúng thứ mà thiết kế hai tầng sinh ra để tránh — và sẽ CHẶN DEPLOY mỗi
+      # lần ai đó viết vội một câu. Một trang không được đăng vì một lỗi chính tả là một trang không ai
+      # đọc được. Nên bước này: KHÔNG có `set -e`, mọi phép đều có `|| true`, và kết thúc bằng `exit 0`
+      # VÔ ĐIỀU KIỆN. Nó in `::warning` (huy hiệu vàng trên file và trên PR), không bao giờ in `::error`.
+      #
+      # ⚠ VIỆC CỦA BƯỚC NÀY KHÔNG GỒM đường dẫn máy cá nhân. Thứ đó là CỔNG CỨNG ở vế RIÊNG TƯ của bước
+      # trên (exit 1), và cố tình không được nhắc lại ở đây dưới dạng cảnh báo: cùng một sự kiện mà một
+      # chỗ coi là chặn-deploy còn một chỗ coi là nhắc-nhẹ thì người đọc không biết tin chỗ nào.
+      #
+      # ⚠ MỘT PHÉP KIỂM BỊ BỎ QUA PHẢI ĐƯỢC ĐẾM VÀ NÓI RA — và phép soát CJK ở dưới đi kèm một ĐỐI
+      # CHỨNG DƯƠNG: trước khi tin rằng nó thấy 0 chữ CJK, nó phải bắt được MỘT chữ CJK dựng sẵn. Một
+      # báo cáo "0 cảnh báo" mà thiếu một phép kiểm thì không phân biệt được với "0 cảnh báo trên một
+      # cây đã được soát đủ" — đúng cái bẫy đã khiến một phép quét riêng tư trong repo nguồn tuyên bố
+      # SẠCH sau khi đọc 1 trên 14 file.
+      # Bài học này trả giá bằng hai lỗi THẬT của bản đầu bước này, cả hai đều im lặng: (1) nó dò khả
+      # năng PCRE bằng `printf '' | grep -P ''`, và lệnh đó thoát **1** vì ĐẦU VÀO RỖNG không có gì để
+      # khớp chứ không phải vì runner thiếu PCRE ⇒ bước in ra "BỎ QUA phép soát CJK" với một lý do SAI;
+      # (2) mẫu thật `grep -P '[\x{3000}-\x{303F}…]'` thì GNU grep từ chối thẳng ("character code point
+      # value in \x{} is too large") khi locale không phải UTF ⇒ phép soát đó CHƯA TỪNG CHẠY được một
+      # lần nào. Bản dưới đây không dùng PCRE nữa: nó khớp theo DẢI BYTE UTF-8 trong locale C, thứ luôn
+      # có mặt trên mọi runner.
+      - name: Soát tầng người sửa — chỉ cảnh báo, không chặn deploy
+        run: |
+          set -uo pipefail
+          # Tên thư mục ĐỌC TỪ SOURCE.json chứ không gõ cứng, cùng lý do với mọi con số trong file này:
+          # một cái tên chép tay đặt cạnh một cái tên do máy ghi là một bản sao sẽ trôi.
+          d=$(grep -o '"cmp_dir"[[:space:]]*:[[:space:]]*"[^"]*"' SOURCE.json 2>/dev/null | sed -E 's/^"cmp_dir"[[:space:]]*:[[:space:]]*"//; s/"$//' || true)
+          [ -n "$d" ] || d=compare
+          if [ ! -d "$d" ]; then
+            echo "ℹ️ không có thư mục ${d}/ trong cây này — không có tầng người sửa để soát (0 file, không phải 'đã soát và sạch')"
+            exit 0
+          fi
+          warnlog=$(mktemp); tmplinks=$(mktemp)
+          w() { printf '::warning file=%s::%s\n' "$1" "$2" | tee -a "$warnlog"; }
+          nfiles=0; nlines=0; nskipped=0
+          find "$d" -maxdepth 1 -type f -name '*.md' | sort >"$tmplinks.list" || true
+          while read -r f; do
+            [ -n "$f" ] || continue
+            nfiles=$((nfiles+1))
+            nlines=$((nlines + $(wc -l <"$f" | tr -d ' ' || echo 0)))
+            if [ ! -s "$f" ]; then w "$f" "file RỖNG — 0 byte"; continue; fi
+            # (a) PLACEHOLDER của bản mồi chưa điền. Mẫu CHÍNH XÁC `@@TÊN@@`, không phải đếm `@@` trần:
+            #     chuỗi `@@` xuất hiện hợp lệ trong văn bản Prisma (`@@map`, `@@unique`) nên đếm trần là
+            #     đếm cả thứ không phải placeholder.
+            ph=$(grep -oE '@@[A-Z0-9_]+@@' "$f" | sort -u | tr '\n' ' ' || true)
+            [ -z "$ph" ] || w "$f" "còn placeholder của bản mồi chưa được điền: ${ph}"
+            # (b) HÀNG RÀO CODE số lẻ: một hàng rào quên đóng sẽ nuốt phần còn lại của file khi render,
+            #     kể cả bảng — và lỗi này KHÔNG hiện ra khi đọc file thô.
+            fen=$(grep -c '^```' "$f" || true)
+            [ $((fen % 2)) -eq 0 ] || w "$f" "có ${fen} hàng rào code (số LẺ) — một hàng rào chưa đóng"
+            # (c) LINK TƯƠNG ĐỐI gãy. Repo này KHÔNG chứa tài liệu nguồn, nên một liên kết chép từ repo
+            #     nguồn sang đây gần như chắc chắn gãy. Đọc qua file trung gian chứ không pipe: một
+            #     pipeline `grep | while` chạy vòng lặp trong SUBSHELL nên mọi biến đếm trong đó mất.
+            grep -oE '\]\([^)]+\)' "$f" | sed -E 's/^\]\(//; s/\)$//' | sort -u >"$tmplinks" || true
+            dir=$(dirname "$f")
+            while read -r t; do
+              [ -n "$t" ] || continue
+              case "$t" in http://*|https://*|mailto:*|"#"*) continue ;; esac
+              tf="${t%%#*}"
+              [ -n "$tf" ] || continue
+              [ -e "$dir/$tf" ] || w "$f" "liên kết tương đối trỏ tới thứ không tồn tại trong repo này: ${t}"
+            done <"$tmplinks"
+          done <"$tmplinks.list"
+          # (d) CJK — khớp theo DẢI BYTE UTF-8, không cần PCRE và không phụ thuộc locale.
+          #     [\xe3-\xe9] phủ ĐÚNG U+3000–U+9FFF (E3 = U+3000–3FFF, E4..E9 = U+4000–9FFF) và
+          #     [\xea-\xed] phủ U+A000–U+D7FF, tức một tập CHỨA Hangul U+AC00–D7AF. Nó RỘNG hơn dải mã
+          #     mà GATE-VNDOC của repo nguồn dùng (thêm vài khối chữ ít gặp), và đó là chủ đích: đây là
+          #     một lời NHẮC chứ không phải một phán quyết, thà nhắc thừa một khối chữ lạ trong tài liệu
+          #     tiếng Việt còn hơn bỏ sót. Tiếng Việt thật nằm ở C3..C7 và E1 nên KHÔNG bị dải này chạm.
+          #     LC_ALL=C là bắt buộc: ở locale UTF, grep diễn giải lại các byte và dải byte mất nghĩa.
+          if printf '\xe6\x97\xa5\n' | LC_ALL=C grep -q $'[\xe3-\xe9\xea-\xed]'; then
+            while read -r f; do
+              [ -n "$f" ] || continue
+              cjk=$(LC_ALL=C grep -c $'[\xe3-\xe9\xea-\xed]' "$f" || true)
+              [ "${cjk:-0}" = "0" ] || w "$f" "có ${cjk} dòng chứa ký tự ngoài khối Latin (CJK/Hangul) — tài liệu này là tiếng Việt"
+            done <"$tmplinks.list"
+          else
+            nskipped=$((nskipped+1))
+            echo "ℹ️ BỎ QUA phép soát CJK: phép dò byte-range KHÔNG bắt được chữ U+65E5 dựng sẵn — nó mù, chứ không phải cây này sạch."
+          fi
+          nw=$(grep -c . "$warnlog" || true)
+          echo "ℹ️ soát tầng người sửa: ${nfiles} file .md · ${nlines} dòng trong ${d}/ · ${nw:-0} cảnh báo · ${nskipped} phép kiểm bị bỏ qua · KHÔNG phép nào ở đây chặn deploy"
+          rm -f "$warnlog" "$tmplinks" "$tmplinks.list"
+          exit 0
+
       - name: Dựng artifact
         run: |
           set -euo pipefail

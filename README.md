@@ -96,12 +96,35 @@ Việc bỏ qua được khai báo **ba lần** để không ai phải đoán: t
 thì bước kiểm vẫn bỏ qua đúng, vì nó **quét đĩa** chứ không đọc con tem; chênh lệch giữa tem và đĩa
 được in thành `ℹ️` (tin tốt: có người vừa vào cập nhật), không phải lỗi.
 
+Cột cuối của bảng nói về **một** bước là `Kiểm toàn vẹn`. Đọc nó thành "không có gì nhìn vào tầng NGƯỜI"
+thì sai: còn một bước **khác** đứng ngay sau, chỉ soát tầng NGƯỜI và chỉ **cảnh báo** — hệ quả 1 bên dưới.
+
 **Ba hệ quả phải nói thẳng, vì chúng là cái giá của thiết kế chứ không phải lỗi:**
 
-1. **`compare/DIFFERENCES.md` nằm NGOÀI mọi cổng ngôn ngữ.** Repo gốc có `GATE-VNDOC` soát lỗi chính tả,
-   link gãy và cú pháp Mermaid cho tài liệu tiếng Việt; file này **không** được cổng đó chạm tới, vì nó
-   không nằm trong repo gốc — nó chỉ tồn tại ở đây. Lỗi chính tả trong đó sẽ không ai bắt. Đổi lại: bạn
-   sửa được nó ngay trên GitHub mà không cần chạy lại bất kỳ cổng nào.
+1. **`compare/DIFFERENCES.md` nằm NGOÀI mọi cổng ngôn ngữ — nhưng không còn nằm ngoài mọi phép soát.**
+   Repo gốc có `GATE-VNDOC` soát lỗi chính tả, link gãy và cú pháp Mermaid cho tài liệu tiếng Việt; file
+   này **không** được cổng đó chạm tới, vì nó không nằm trong repo gốc — nó chỉ tồn tại ở đây. **Lỗi
+   chính tả trong đó vẫn không ai bắt.** Đổi lại: bạn sửa được nó ngay trên GitHub mà không cần chạy lại
+   bất kỳ cổng nào.
+
+   Repo này nay có thêm một bước **`Soát tầng người sửa`**, đứng ngay sau `Kiểm toàn vẹn`, chỉ nhìn các
+   file `.md` trong `compare/` và chỉ in **cảnh báo** cho: link tương đối trỏ tới thứ không có trong repo
+   này · hàng rào code số lẻ (một hàng rào quên đóng sẽ nuốt cả bảng khi render) · placeholder `@@…@@`
+   của bản mồi chưa được điền · file rỗng · ký tự ngoài khối Latin. Nó luôn in kèm **mẫu số dương** — đã
+   soát bao nhiêu file, bao nhiêu dòng, bao nhiêu cảnh báo, và bao nhiêu phép kiểm **bị bỏ qua** — vì một
+   báo cáo "0 cảnh báo" không kèm mẫu số thì không phân biệt được với một phép soát chưa từng chạy.
+
+   Nó **không bao giờ chặn deploy**: không có `set -e`, mọi phép đều có phanh, và dòng cuối của nó là
+   `exit 0` vô điều kiện. Đó là lựa chọn có chủ đích — một cổng cứng ở đây sẽ biến file con người sửa
+   thành file bị máy canh, đúng thứ mà thiết kế hai tầng sinh ra để tránh, và sẽ chặn đăng trang chỉ vì
+   một câu viết vội. Để lời hứa đó không bị một lượt sửa sau này âm thầm phá vỡ, CI của repo **gốc**
+   canh chính ba tính chất ấy (không `set -e` · không `::error` · dòng cuối là `exit 0`) và ĐỎ nếu mất
+   một cái.
+
+   Đường dẫn máy cá nhân **không** thuộc việc của bước này: thứ đó là **cổng cứng** ở vế RIÊNG TƯ của
+   `Kiểm toàn vẹn` (`exit 1`). Cùng một sự kiện mà một chỗ coi là chặn-deploy còn một chỗ coi là nhắc-nhẹ
+   thì người đọc không biết tin chỗ nào, nên hai việc được giữ ở hai bước khác nhau với hai mức nghiêm
+   khắc khác nhau.
 2. **Những con số trong §1 của nó là ẢNH CHỤP ĐÔNG CỨNG**, kèm SHA và ngày đo. Chúng được **máy chép
    nguyên văn** từ bảng §3.1 lúc tạo file lần đầu — không gõ tay — nhưng từ lúc đó về sau **không cổng
    nào cập nhật hay kiểm chúng**. Nếu §1 và `survey.json` cãi nhau, **`survey.json` thắng**, và file tự
@@ -113,7 +136,9 @@ thì bước kiểm vẫn bỏ qua đúng, vì nó **quét đĩa** chứ không 
    đường dẫn cá nhân vào tài liệu công khai để "giải thích rằng nó đã bị lược" thì chính là công bố nó
    — đúng lỗi mà việc lược sinh ra để ngăn. Một đường dẫn như vậy
    vào lịch sử git công khai thì ở đó vĩnh viễn: xoá file ở commit sau **không** xoá được nó khỏi lịch sử.
-   `survey.json` là bản đã được quét 10 mẫu và sạch.
+   `survey.json` ở đây **không phải bản gốc**, và bản gốc thì **không** sạch: nó là bản đã lược. Mục ngay
+   bên dưới nói đúng những gì bị lược, bằng phép dò nào (12 mẫu biết tên cộng một phép dò tổng quát hai
+   mức, chứ không phải "10 mẫu" như câu cũ ở đây từng khai), và ba điều kiện được kiểm lúc xuất bản.
 
 #### `compare/survey.json` ở đây là BẢN ĐÃ LƯỢC — và đây là đúng những gì bị lược
 
